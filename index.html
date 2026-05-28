@@ -1,0 +1,1983 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بوابة الفوارس الرقمية - النظام السيادي السحابي المتكامل</title>
+    <style>
+        :root {
+            --primary-gold: #c5a059;
+            --gold-glow: rgba(197, 160, 89, 0.3);
+            --dark-blue: #0b131f;
+            --slate-black: #060a10;
+            --panel-bg: rgba(17, 26, 36, 0.95);
+            --text-light: #f5f7fa;
+            --danger-red: #ff5252;
+            --success-green: #4caf50;
+            --editor-purple: #ab47bc;
+            --chat-bg: #070c14;
+            --my-bubble: #1f2c3f;
+            --other-bubble: #121b26;
+            --justice-blue: #1565c0;
+            --intel-red: #8b0000;
+            --bank-gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at top, #162234, var(--slate-black));
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* شاشة تسجيل الدخول */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 9999;
+        }
+
+        .login-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-gold);
+            border-radius: 20px;
+            padding: 35px 25px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px var(--gold-glow);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-box .shield {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+            border: 2px solid var(--primary-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(197, 160, 89, 0.1);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .logo-box h1 { color: var(--primary-gold); font-size: 26px; margin: 0; }
+
+        /* الهيكل الرئيسي المتجاوب للهواتف */
+        .app-layout { display: flex; flex-direction: column; height: 100vh; }
+
+        .navbar {
+            background: rgba(11, 19, 31, 0.98);
+            border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (min-width: 768px) {
+            .navbar { flex-direction: row; justify-content: space-between; padding: 12px 30px; }
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .nav-brand h2 { margin: 0; color: var(--primary-gold); font-size: 18px; }
+
+        .nav-menu {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            width: 100%;
+        }
+        .nav-menu::-webkit-scrollbar { display: none; }
+
+        .nav-tab-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: #fff;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0.75;
+        }
+
+        .nav-tab-btn.active {
+            color: var(--primary-gold);
+            background: rgba(197, 160, 89, 0.15);
+            border-color: var(--primary-gold);
+            opacity: 1;
+        }
+
+        .user-status-tag {
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid var(--primary-gold);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            align-self: center;
+        }
+
+        .main-container { flex: 1; overflow-y: auto; position: relative; padding: 15px; box-sizing: border-box; }
+        .main-container.chat-mode { padding: 0; overflow: hidden; }
+        .page-section { display: none; height: 100%; }
+        .page-section.active { display: block; }
+
+        .panel-box {
+            background: var(--panel-bg);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .panel-box h3 { margin-top: 0; color: var(--primary-gold); font-size: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(197,160,89,0.15); }
+
+        .form-control {
+            width: 100%; padding: 12px; box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(197, 160, 89, 0.25);
+            border-radius: 8px; color: #fff; font-size: 14px; margin-bottom: 12px;
+            font-family: inherit;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary-gold); }
+
+        .btn-action {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary-gold), #9a7836);
+            border: none; border-radius: 8px; color: #05080c; font-weight: bold; font-size: 13px; cursor: pointer;
+        }
+
+        /* واجهة الدردشة */
+        .chat-view-wrapper { display: flex; flex-direction: column; height: 100%; background: var(--chat-bg); position: relative; }
+        .presence-mini-bar { background: #0f1724; border-bottom: 1px solid rgba(197, 160, 89, 0.2); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; cursor: pointer; }
+        .online-dots-flow { display: none; background: #131d2f; padding: 8px; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid rgba(197, 160, 89, 0.15); }
+        .online-member-tag { background: rgba(76, 175, 80, 0.15); border: 1px solid var(--success-green); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 12px; display: flex; align-items: center; gap: 4px; }
+        .online-member-tag::before { content: ""; width: 6px; height: 6px; background: var(--success-green); border-radius: 50%; }
+        .chat-messages-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-bubble { max-width: 85%; padding: 10px 12px; border-radius: 14px; font-size: 13.5px; line-height: 1.45; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; }
+        .chat-bubble.msg-me { background: var(--my-bubble); border-right: 3px solid var(--primary-gold); align-self: flex-start; border-top-right-radius: 2px; }
+        .chat-bubble.msg-other { background: var(--other-bubble); border-right: 3px solid #00bcd4; align-self: flex-end; border-top-left-radius: 2px; }
+        .bubble-sender { font-size: 11px; font-weight: bold; color: var(--primary-gold); margin-bottom: 4px; }
+        .chat-bubble.msg-other .bubble-sender { color: #00bcd4; }
+        .bubble-meta { display: flex; justify-content: space-between; align-items: center; font-size: 9px; opacity: 0.5; margin-top: 5px; gap: 10px; }
+        .chat-delete-btn { position: absolute; left: 8px; top: 6px; background: none; border: none; color: var(--danger-red); font-size: 12px; font-weight: bold; cursor: pointer; display: none; }
+        
+        /* الهوية السيادية */
+        .id-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
+        .id-card { width: 100%; max-width: 400px; aspect-ratio: 1.63 / 1; background: #090f16; border: 1px solid var(--primary-gold); border-radius: 14px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; padding: 12px; box-sizing: border-box; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(197, 160, 89, 0.3); padding-bottom: 4px; }
+        .card-header h4 { margin: 0; font-size: 11px; color: var(--primary-gold); }
+        .card-body-layout { display: flex; justify-content: space-between; height: calc(100% - 45px); margin-top: 5px; }
+        .card-info-pane { width: 70%; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+        .card-field { display: flex; border-bottom: 1px solid rgba(197, 160, 89, 0.08); padding-bottom: 2px; }
+        .field-lbl { width: 35%; font-size: 9px; color: var(--primary-gold); }
+        .field-val { width: 65%; font-size: 11px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .card-photo-pane { width: 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .photo-frame { width: 100%; aspect-ratio: 1 / 1.22; border: 1px solid var(--primary-gold); border-radius: 6px; background: #000; overflow: hidden; }
+        .photo-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .card-footer { position: absolute; bottom: 6px; left: 12px; right: 12px; display: flex; justify-content: space-between; font-size: 9px; color: var(--primary-gold); }
+        .card-back { display: flex; flex-direction: column; justify-content: space-between; }
+        .qr-zone { display: flex; justify-content: space-between; align-items: center; }
+        .qr-box { background: white; padding: 3px; border-radius: 4px; width: 50px; height: 50px; }
+        .qr-box img { width: 100%; height: 100%; }
+
+        .news-card, .law-item, .post-card, .dept-item, .court-item { background: rgba(255,255,255,0.02); border-right: 3px solid var(--primary-gold); padding: 12px; border-radius: 6px; margin-bottom: 10px; position: relative; }
+        .court-item { border-right: 4px solid var(--justice-blue); background: rgba(21, 101, 192, 0.04); }
+        .remove-btn { position: absolute; top: 10px; left: 10px; background: rgba(255, 82, 82, 0.15); border: 1px solid var(--danger-red); color: var(--danger-red); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; display: none; }
+
+        .toast-notification { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0b131f; border: 1px solid var(--primary-gold); padding: 10px 20px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: transform 0.3s ease; z-index: 2000; text-align: center; pointer-events: none; }
+        .toast-notification.show { transform: translateX(-50%) translateY(0); }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 850px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* الكتب الرسمية */
+        .official-document-template {
+            background: #fff;
+            color: #000;
+            padding: 40px;
+            border: 2px solid #c5a059;
+            margin-top: 15px;
+            font-family: 'Traditional Arabic', 'Segoe UI', serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .doc-header-fixed {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: flex-start;
+            border-bottom: 2px solid #c5a059;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .doc-header-right { text-align: right; font-size: 16px; font-weight: bold; line-height: 1.3; }
+        .doc-header-right span { font-size: 12px; font-family: 'Segoe UI', sans-serif; display: block; margin-top: 2px; letter-spacing: 0.5px; }
+        .doc-header-center { }
+        .doc-header-left { text-align: left; font-size: 14px; font-weight: bold; line-height: 1.5; }
+        .doc-body { min-height: 220px; font-size: 18px; line-height: 1.8; white-space: pre-wrap; text-align: justify; color: #111; padding: 0 10px; }
+        .doc-footer-fixed { border-top: 1px dashed #ccc; margin-top: 40px; padding-top: 15px; }
+        .doc-stamp-area { text-align: left; padding-left: 50px; margin-bottom: 20px; }
+        .doc-stamp-box { display: inline-block; text-align: center; border: 3px double #c5a059; padding: 10px 20px; border-radius: 50%; color: #c5a059; font-weight: bold; background: rgba(197,160,89,0.02); box-shadow: 0 0 5px rgba(197,160,89,0.2); font-size: 14px; }
+        .doc-cc-area { text-align: right; font-size: 13px; color: #444; font-weight: bold; line-height: 1.6; }
+
+        /* تنسيقات السوق والبنك المركزي */
+        .market-item-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+        .market-item-details { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .market-item-title { font-weight: bold; color: var(--text-light); font-size: 14px; }
+        .market-item-cost { color: var(--bank-gold); font-size: 12px; font-weight: bold; }
+        .market-item-seller { font-size: 11px; color: #aaa; }
+        .market-item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--primary-gold); }
+        .bank-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: center; }
+        .bank-table th { background: rgba(197,160,89,0.2); color: var(--primary-gold); padding: 8px; border: 1px solid rgba(197,160,89,0.3); }
+        .bank-table td { padding: 8px; border: 1px solid rgba(197,160,89,0.15); background: rgba(0,0,0,0.2); }
+
+        /* ميزة إيماء ومحفظة الرصيد العائمة المضافة حديثاً */
+        .floating-wallet-gesture {
+            position: fixed; bottom: 20px; right: 20px; z-index: 1999;
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            border: 2px solid var(--primary-gold); border-radius: 50%;
+            width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), 0 0 10px var(--gold-glow);
+            cursor: pointer; transition: transform 0.2s ease, border-radius 0.3s ease;
+        }
+        .floating-wallet-gesture:hover { transform: scale(1.05); }
+        .floating-wallet-gesture.expanded {
+            border-radius: 12px; width: 160px; height: 55px; padding: 0 12px;
+            justify-content: space-between; background: var(--panel-bg);
+        }
+        .floating-wallet-txt { display: none; font-size: 12px; font-weight: bold; color: var(--bank-gold); text-align: center; width: 100%; }
+        .floating-wallet-gesture.expanded .floating-wallet-txt { display: block; }
+        .floating-wallet-gesture.expanded svg { width: 22px; height: 22px; color: var(--primary-gold); }
+
+        /* شاشة قفل القضاء ومنع الوصول التام للأعضاء المغرمين */
+        .court-lockout-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 10, 16, 0.98); z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box; text-align: center;
+        }
+        .court-lockout-box {
+            background: var(--panel-bg); border: 2px solid var(--danger-red);
+            border-radius: 16px; padding: 30px; max-width: 450px; width: 100%;
+            box-shadow: 0 0 30px rgba(255, 82, 82, 0.2);
+        }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <div class="toast-notification" id="appToast"></div>
+
+    <div class="floating-wallet-gesture" id="floatingWallet" onclick="toggleWalletGestureDisplay()" style="display:none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2" id="walletIconSvg">
+            <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+            <line x1="2" y1="10" x2="22" y2="10" />
+        </svg>
+        <span class="floating-wallet-txt" id="floatingWalletBalanceDisplay">محفظتك: 0 أكة</span>
+    </div>
+
+    <div class="court-lockout-overlay" id="courtLockoutOverlay" style="display:none;">
+        <div class="court-lockout-box">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ff5252" stroke-width="2" style="margin-bottom:15px;">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <h2 style="color:var(--danger-red); margin-top:0;">🚫 صلاحيات العضوية مجمدة قيد التنفيذ</h2>
+            <p style="font-size:14px; line-height:1.6; color:#ddd;" id="courtLockoutMessageText">أصدر مجلس القضاء الأعلى حكماً مالياً بحقك. لقد تم إيقاف كامل صلاحيات حسابك وموقعك مؤقتاً ولن تتمكن من ممارسة نشاطك الحزبي حتى يتم تسديد الغرامة المالية بالكامل.</p>
+            <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; margin:20px 0; border:1px solid rgba(255,82,82,0.3);">
+                <div style="font-size:12px; color:#aaa;">مبلغ الغرامة الإجباري المطلوب:</div>
+                <div id="courtLockoutFineAmount" style="font-size:22px; color:var(--danger-red); font-weight:bold; margin-top:4px;">0 أكة</div>
+                <div style="font-size:11px; color:var(--bank-gold); margin-top:5px;" id="courtLockoutUserBalance">رصيدك الحالي المتاح: 0 أكة</div>
+            </div>
+            <button class="btn-action" style="background:linear-gradient(135deg, var(--success-green), #2e7d32); color:white;" onclick="payMandatoryCourtFineCloud()">تسديد الغرامة الفورية وفك القفل ⚖️</button>
+        </div>
+    </div>
+
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="logo-box">
+                <div class="shield">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h1 id="siteMainTitle">بَوَّابَةُ الْفَوَارِسِ</h1>
+                <p id="siteSubTitle">المنظومة السحابية السيادية المركزية</p>
+            </div>
+            <input type="password" id="loginIdInput" class="form-control" placeholder="أدخل رمز الدخول الحزبي" style="text-align:center;">
+            <button class="btn-action" onclick="handleLoginVerify()">امتثال والتحقق الآمن</button>
+        </div>
+    </div>
+
+    <div class="app-layout" id="appLayout" style="display:none;">
+        <nav class="navbar" id="dynamicNavbar">
+            <div class="nav-brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <h2 id="navTitle">الأمانة العامة السيادية</h2>
+            </div>
+            <ul class="nav-menu" id="dynamicNavMenu">
+                <li><button class="nav-tab-btn active" onclick="switchPage('newsPage', this)">المستجدات</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('chatPage', this)">ديوان الحوار</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('identityPage', this)">الهوية</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('partyMarketPage', this)">سوق الحزب المالي</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('departmentsPage', this)">الأمانة العامة للدوائر</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('constitutionPage', this)">الدستور والأحكام</button></li>
+                <li><button class="nav-tab-btn" id="courtTabBtn" onclick="switchPage('courtPage', this)">محكمة الفوارس العليا</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('electionsPage', this)">الاقتراع والانتخابات</button></li>
+                <li><button class="nav-tab-btn" onclick="switchPage('officialDocsPage', this)">الكتب الرسمية</button></li>
+                <li><button class="nav-tab-btn" id="centralBankTabBtn" onclick="switchPage('centralBankPage', this)" style="display:none; color:var(--bank-gold); font-weight:bold; background:rgba(255,215,0,0.1);">🏛️ البنك المركزي</button></li>
+                <li><button class="nav-tab-btn" id="intelTabBtn" onclick="switchPage('intelPage', this)" style="display:none; color:var(--danger-red); font-weight:bold; background:rgba(255,0,0,0.15);">⚠️ الاستخبارات والأمن</button></li>
+                <li><button class="nav-tab-btn" id="adminTabBtn" onclick="switchPage('adminPage', this)" style="display:none; color:var(--primary-gold); font-weight:bold;">القيادة العليا</button></li>
+            </ul>
+            <div class="user-status-tag" id="userBadgeDisplay">-</div>
+        </nav>
+
+        <div class="main-container" id="mainContainerBox">
+
+            <div class="page-section active" id="newsPage">
+                <div class="panel-box" id="memberPostBox" style="display:none;">
+                    <h3>ساحة النشر المطور بالصور</h3>
+                    <textarea id="memberPostContent" class="form-control" rows="2" placeholder="اكتب نص منشورك السيادي هنا..."></textarea>
+                    <input type="text" id="memberPostPhoto" class="form-control" placeholder="رابط صورة مدمجة (اختياري)">
+                    <button class="btn-action" style="background:linear-gradient(135deg, #00bcd4, #00838f); color:white;" onclick="createMemberPostCloud()">نشر الآن على العامة</button>
+                </div>
+                <div class="panel-box">
+                    <h3>المراسيم والتعميمات والمنشورات وأحكام القضاء الموثقة</h3>
+                    <div id="newsFeedBox"></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="chatPage">
+                <div class="chat-view-wrapper">
+                    <div class="presence-mini-bar" onclick="toggleOnlineListFlow()">
+                        <span>🟢 <span id="onlineCountLabel">الكوادر المتواجدة حالياً بالمجلس</span></span>
+                        <span id="onlineCountTxt">اضغط للاستعراض (0) 🔽</span>
+                    </div>
+                    <div class="online-dots-flow" id="onlineUsersBox"></div>
+                    <div class="chat-messages-container" id="chatMessagesBox"></div>
+                    <div class="chat-input-area" style="display:flex; padding:10px; background:rgba(0,0,0,0.3); gap:8px;">
+                        <input type="text" id="chatMessageInput" class="form-control" placeholder="اكتب رسالتك السيادية..." style="margin-bottom:0; flex:1;" autocomplete="off">
+                        <button class="btn-action" style="width:75px;" onclick="sendChatMessageCloudCore()">إرسال</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="identityPage">
+                <div class="dashboard-grid">
+                    <div class="panel-box">
+                        <h3>وثيقة الانتماء السحابية</h3>
+                        <input type="file" id="idPhotoInput" class="form-control" accept="image/*" onchange="uploadUserImageToServer(event)">
+                        <button class="btn-action" onclick="downloadIdentityCards()">تصدير بطاقة الهوية (وجه + ظهر)</button>
+                    </div>
+                    <div class="panel-box" style="display:flex; flex-direction:column; align-items:center;">
+                        <h3>بطاقة العضوية السيادية</h3>
+                        <div class="id-card-wrapper">
+                            <div class="id-card" id="frontCard">
+                                <div class="card-header" id="idCardHeaderDom">
+                                    <div><h4 id="idCountryTitle">جمهورية العراق</h4><p id="idPartyTitle">حزب الفوارس - الأمانة العامة</p></div>
+                                </div>
+                                <div class="card-body-layout">
+                                    <div class="card-info-pane" id="idCardFieldsContainer">
+                                        <div class="card-field"><div class="field-lbl" id="lbl_name">الاسم</div><div class="field-val" id="f_name">-</div></div>
+                                        <div class="card-field"><div class="field-lbl" id="lbl_pos">المنصب</div><div class="field-val" id="f_pos">-</div></div>
+                                        <div class="card-field"><div class="field-lbl" id="lbl_dept">الترخيص</div><div class="field-val" id="f_dept">-</div></div>
+                                        <div class="card-field"><div class="field-lbl" id="lbl_home">النطاق</div><div class="field-val" id="f_home">-</div></div>
+                                        <div class="card-field"><div class="field-lbl" style="color:var(--bank-gold);">رصيد الأكة</div><div class="field-val" id="f_balance" style="color:var(--bank-gold); font-weight:bold;">0 أكة</div></div>
+                                    </div>
+                                    <div class="card-photo-pane"><div class="photo-frame"><img id="f_photo" src=""></div></div>
+                                </div>
+                                <div class="card-footer"><div class="serial-text" id="f_serial">-</div></div>
+                            </div>
+                            <div class="id-card card-back" id="backCard">
+                                <div class="qr-zone">
+                                    <div class="qr-box"><img id="b_qr" src=""></div>
+                                    <div class="card-info-pane" style="width:70%;">
+                                        <div class="card-field"><div class="field-lbl" id="lbl_birth">المواليد</div><div class="field-val" id="b_birth">-</div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="partyMarketPage">
+                <div class="panel-box">
+                    <h3>🛒 متجر الحزب الرقمي الموحد وسوق الأعضاء</h3>
+                    <p style="font-size:12px; color:#bbb; margin-bottom:15px;">يمكنك هنا شراء الأوسمة والمناصب الرسمية، أو تصفح وابتياع السلع والمناصب المعروضة من الكوادر الأخرى مباشرة.</p>
+                    
+                    <div style="background:rgba(255,255,255,0.02); padding:12px; border-radius:10px; margin-bottom:20px; border:1px solid rgba(197,160,89,0.25);">
+                        <h4 style="color:var(--primary-gold); margin-top:0; margin-bottom:10px;">➕ عرض منصب، وسام أو غرض سيادي للبيع:</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <input type="text" id="marketOfferTitle" class="form-control" placeholder="عنوان الشيء (مثال: منصب مستشار خاص أو وسام)">
+                            <input type="number" id="marketOfferPrice" class="form-control" placeholder="السعر المطلوب (عملة أكة)">
+                        </div>
+                        <label style="font-size:11px; color:#aaa; display:block; margin-bottom:5px;">إرفاق صورة للمادة المعروضة للبيع:</label>
+                        <input type="file" id="marketOfferFilePicker" class="form-control" accept="image/*" onchange="encodeMarketOfferFile(event)">
+                        <input type="hidden" id="marketOfferImageBase64">
+                        <button class="btn-action" style="background:#2e7d32; color:white; margin-top:5px;" onclick="submitNewMarketOfferCloud()">طرح الشيء في السوق السيادي 🚀</button>
+                    </div>
+
+                    <h4 style="color:var(--bank-gold);">📋 المواد والمناصب المدرجة للبيع الفوري:</h4>
+                    <div id="marketItemsContainer"></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="departmentsPage">
+                <div class="panel-box" id="secGenDeptsAdminBox" style="display:none; border:1px solid var(--primary-gold);">
+                    <h3>إدارة وهيكلة الدوائر الفيدرالية (سلطة الأمين العام 530)</h3>
+                    <input type="text" id="newDeptTitle" class="form-control" placeholder="عنوان الدائرة (مثال: دائرة الثقافة والفنون)">
+                    <input type="text" id="newDeptJob" class="form-control" placeholder="وظيفة الدائرة ونطاقها العملي">
+                    <button class="btn-action" onclick="createPartyDepartmentCloud()">تأسيس وتثبيت الدائرة سحابياً</button>
+                    
+                    <hr style="border-color:rgba(197,160,89,0.2); margin:15px 0;">
+                    <h4>إدراج وتنسيب أعضاء داخل دائرة ومنح صلاحيات التعيين:</h4>
+                    <select id="targetDeptSelector" class="form-control"></select>
+                    <select id="targetMemberToDeptSelector" class="form-control"></select>
+                    
+                    <label style="font-size:12px; color:var(--primary-gold); display:block; margin-bottom:5px;">منح صلاحيات تعيين خاصة (تتطلب مصادقة الجهة المعنية):</label>
+                    <select id="newMemberSpecialPerms" class="form-control">
+                        <option value="none">عضو دائرة اعتيادي</option>
+                        <option value="court_appointment">طلب تعيين في مجلس القضاء الأعلى</option>
+                        <option value="intel_appointment">طلب تعيين في مديرية الأمن والاستخبارات</option>
+                    </select>
+                    <button class="btn-action" style="background:#2e7d32; color:white;" onclick="addMemberToDeptCloud()">إصدار أمر التنسيب والإرسال</button>
+                </div>
+
+                <div class="panel-box" id="specialEndorsementBox" style="display:none; border:1px solid var(--justice-blue);">
+                    <h3>⚖️🛡️ مصادقة التعيينات السيادية المرفوعة</h3>
+                    <div id="endorsementsFeedBox" style="display:flex; flex-direction:column; gap:8px;"></div>
+                </div>
+
+                <div class="panel-box">
+                    <h3>الهيكل الإداري والدوائر الحزبية العامة</h3>
+                    <div id="departmentsFeedBox"></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="constitutionPage">
+                <div class="panel-box" id="constitutionEditorBox" style="display:none;">
+                    <h3>🖋️ محرر الدستور الأعلى والنظام الداخلي (حصر رئيس القضاء بارق محمد)</h3>
+                    <textarea id="constitutionContentInput" class="form-control" rows="6" placeholder="اكتب بنود ومواد الدستور المحدثة هنا..."></textarea>
+                    
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; margin-bottom:10px;">
+                        <label style="font-size:12px; color:var(--primary-gold);">تفويض كادر لتعديل الدستور (اختياري):</label>
+                        <select id="constitutionDelegateSelector" class="form-control"></select>
+                        <button class="btn-action" style="background:#555; font-size:11px; padding:6px; margin-bottom:5px;" onclick="grantConstitutionDelegationCloud(true)">تفعيل التفويض السحابي</button>
+                        <button class="btn-action" style="background:#722; font-size:11px; padding:6px;" onclick="grantConstitutionDelegationCloud(false)">سحب وإلغاء التفويض</button>
+                    </div>
+
+                    <button class="btn-action" style="background:var(--editor-purple); color:white;" onclick="saveConstitutionToCloud()">تحديث وتثبيت الدستور سحابياً</button>
+                </div>
+                <div class="panel-box">
+                    <h3>📜 الدستور الأعلى والأحكام الثابتة لحزب الفوارس</h3>
+                    <div id="constitutionFeedBox" style="white-space: pre-wrap; background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; line-height:1.6;"></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="courtPage">
+                <div class="panel-box">
+                    <h3>⚖️ تقديم شكوى/دعوى إلى المحكمة العليا</h3>
+                    <select id="courtAccusedSelector" class="form-control"></select>
+                    <textarea id="courtCaseDetails" class="form-control" rows="3" placeholder="تفاصيل وحيثيات المخالفة أو الشكوى بالتفصيل..."></textarea>
+                    <button class="btn-action" style="background:var(--justice-blue); color:white;" onclick="submitCourtCaseCloud()">رفع الدعوى رسمياً للمحكمة</button>
+                </div>
+                <div class="panel-box">
+                    <h3 id="courtCasesHeadingTitle">🏛️ سجل القضايا والبت القضائي العام</h3>
+                    <button id="judgeSecretRecordsBtn" class="btn-action" style="display:none; background:linear-gradient(135deg, #1e3c72, #2a5298); color:white; margin-bottom:12px;" onclick="toggleJudgeSovereignLogs()">📂 كبس للاستعراض القضائي المتكامل (الرمز 392)</button>
+                    <div id="courtCasesFeedBox"></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="electionsPage">
+                <div class="panel-box" id="electionCommitteePanel" style="display:none; border:1px solid var(--success-green);">
+                    <h3>🗳️ لوحة دائرة الانتخابات - إدارة المرشحين (صلاحية الكادر سجاد محمد 710)</h3>
+                    <input type="text" id="newCandidateName" class="form-control" placeholder="اسم المرشح الجديد">
+                    <input type="text" id="newCandidatePos" class="form-control" placeholder="المنصب أو المقعد المستهدف">
+                    
+                    <label style="font-size:12px; color:var(--primary-gold);">السيرة الذاتية للمرشح:</label>
+                    <textarea id="newCandidateBio" class="form-control" rows="2" placeholder="اكتب السيرة الذاتية المفصلة للمرشح هنا..."></textarea>
+                    
+                    <label style="font-size:12px; color:var(--primary-gold);">تحميل صورة المرشح السيادية (ملف مباشر):</label>
+                    <input type="file" id="newCandidatePhotoFile" class="form-control" accept="image/*">
+                    
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <button class="btn-action" style="background:var(--success-green); color:black;" onclick="addNewCandidateFileCloud()">إدراج ونشر المرشح بالقائمة</button>
+                        <button class="btn-action" style="background:var(--justice-blue); color:white;" onclick="controlVotingState('open')">🔓 فتح باب التصويت</button>
+                        <button class="btn-action" style="background:#e65100; color:white;" onclick="controlVotingState('closed')">🔒 إغلاق باب التصويت</button>
+                    </div>
+                    <button class="btn-action" style="background:var(--danger-red); color:white;" onclick="finishElectionsAndDispatch()">🏁 إعلان انتهاء العملية الانتخابية وإرسال البيانات</button>
+                </div>
+
+                <div class="panel-box" id="judgeElectionApprovalPanel" style="display:none; border:2px solid var(--primary-gold); background:rgba(20,20,5,0.9);">
+                    <h3 style="color:var(--primary-gold);">📜 المصادقة الختامية على سجلات الانتخابات (رئيس القضاء بارق محمد)</h3>
+                    <div id="judgeElectionReportBox" style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; font-size:13px; margin-bottom:10px;"></div>
+                    <button class="btn-action" style="background:#2e7d32; color:white;" onclick="approveElectionRegistryByJudge(true)">✍️ مصادقة واعتماد السجلات رسمياً</button>
+                    <button class="btn-action" style="background:var(--danger-red); color:white; margin-top:5px;" onclick="approveElectionRegistryByJudge(false)">❌ نقض وإلغاء نتائج الاقتراع</button>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="panel-box"><h3>🗳️ صندوق الاقتراع المفتوح لعامة الأعضاء</h3><div id="voteOptionsBox"></div></div>
+                    <div class="panel-box"><h3>📊 مركز الفرز والنتائج المباشرة للمجلس</h3><div id="voteResultsBox"></div></div>
+                </div>
+            </div>
+
+            <div class="page-section" id="officialDocsPage">
+                <div class="panel-box">
+                    <h3>🖋️ إصدار وتحرير كتب رسمية (حزب الفوارس)</h3>
+                    <textarea id="docContentInput" class="form-control" rows="4" placeholder="اكتب نص ومضمون الكتاب الرسمي الحزبي هنا..."></textarea>
+                    <button class="btn-action" onclick="generateOfficialDocument()">اصدار وبث الكتاب الرسمي الثابت</button>
+                </div>
+                <div id="compiledDocPreview" style="display:none;">
+                    <div class="official-document-template" id="officialDocPrintArea">
+                        <div class="doc-header-fixed">
+                            <div class="doc-header-right">
+                                حزب الفوارس
+                                <span>AFUARS PARTY</span>
+                            </div>
+                            <div class="doc-header-center"></div>
+                            <div class="doc-header-left">
+                                التاريخ: <span id="docLiveDate">-</span><br>
+                                الصادرات: <span id="docLiveSerial">-</span>
+                            </div>
+                        </div>
+                        <div class="doc-body" id="docLiveBody"></div>
+                        <div class="doc-footer-fixed">
+                            <div class="doc-stamp-area">
+                                <div class="doc-stamp-box">
+                                    ختم حزب الفوارس<br>
+                                    <span style="font-size:10px; font-weight:normal;" id="docLiveStampSigner">الأمانة السيادية</span>
+                                </div>
+                            </div>
+                            <div class="doc-cc-area">
+                                نسخة منه إلى:<br>
+                                - الدوائر المعنية.
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="margin-top:10px; background:#4caf50; color:black;" onclick="downloadOfficialDocImage()">تحميل وطباعة الكتاب الرسمي</button>
+                </div>
+            </div>
+
+            <div class="page-section" id="intelPage">
+                <div class="panel-box" style="border:2px solid var(--danger-red); background:rgba(20,5,5,0.95);">
+                    <h3 style="color:var(--danger-red);">🕵️ الردع السيادي - مديرية الأمن والاستخبارات (سلطة حسين علاء 511)</h3>
+                    
+                    <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,0,0,0.3);">
+                        <h4 style="color:var(--danger-red); margin-top:0;">🛠️ لوحة تخصيص وتعديل واجهات المنظومة والهويات:</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <input type="text" id="cfg_country" class="form-control" placeholder="تعديل الدولة بالهوية">
+                            <input type="text" id="cfg_party" class="form-control" placeholder="تعديل الجهة/الحزب بالهوية">
+                            <input type="text" id="cfg_nav_title" class="form-control" placeholder="تعديل عنوان شريط المهام">
+                            <input type="text" id="cfg_new_field_lbl" class="form-control" placeholder="اسم حقل جديد بالهوية">
+                        </div>
+                        <button class="btn-action" style="background:var(--justice-blue); color:white; margin-top:5px;" onclick="saveSystemLayoutConfig()">تطبيق وتحديث واجهات النظام والهوية فوراً</button>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,0,0,0.2);">
+                        <h4 style="color:var(--danger-red); margin-top:0;">👥 إدارة وتعديل سجل الكوادر والرموز السريّة:</h4>
+                        <select id="intelMemberSelector" class="form-control" onchange="populateIntelForm()"></select>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <input type="text" id="int_name" class="form-control" placeholder="الاسم الكامل">
+                            <input type="text" id="int_pos" class="form-control" placeholder="المنصب الحزبي">
+                            <input type="text" id="int_id" class="form-control" placeholder="الرمز السري الموحد (كشف)">
+                            <input type="text" id="int_home" class="form-control" placeholder="محل السكن">
+                            <input type="text" id="int_birth" class="form-control" placeholder="المواليد">
+                            <input type="text" id="int_dept" class="form-control" placeholder="جهة الترخيص">
+                            <input type="text" id="int_custom_val" class="form-control" placeholder="قيمة الحقل الجديد المضاف">
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <button class="btn-action" style="background:#2e7d32; color:white;" onclick="executeIntelUpdateCloud(false)">تعديل بيانات القيد</button>
+                            <button class="btn-action" style="background:#1565c0; color:white;" onclick="executeIntelUpdateCloud(true)">إضافة عضو جديد</button>
+                            <button class="btn-action" style="background:var(--danger-red); color:white;" onclick="executeIntelDeleteMember()">حذف العضو نهائياً</button>
+                        </div>
+                        <div style="margin-top:10px; display:flex; gap:10px;">
+                            <button class="btn-action" style="background:#e65100; color:white;" onclick="toggleIntelPosting(false)">🚫 حظر من النشر والشات</button>
+                            <button class="btn-action" style="background:#4caf50; color:black;" onclick="toggleIntelPosting(true)">✅ إلغاء الحظر</button>
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; border:1px solid var(--primary-gold);">
+                        <h4 style="color:var(--primary-gold); margin-top:0;">📁 الأرشيف الاستخباراتي والمخالفات والتقييمات المحمية (حسين علاء):</h4>
+                        <div style="margin-bottom:8px; font-size:12px; color:#bbb;">تقييم أداء وانضباط الكادر المختار:</div>
+                        <input type="text" id="intelMemberRating" class="form-control" placeholder="تقييم العضو السنوي أو الميداني">
+                        <textarea id="intelArchiveReports" class="form-control" rows="3" placeholder="الملاحظات الاستخباراتية الفورية والقرارات الجنائية القضائية أو المخالفات المسجلة ضده..."></textarea>
+                        
+                        <label style="font-size:11px; color:var(--primary-gold);">ارفاق ملفات وصور للأرشيف السري من الجهاز:</label>
+                        <input type="file" id="intelArchiveFilePicker" class="form-control" accept="image/*,application/pdf" onchange="uploadIntelArchiveFile(event)">
+                        <input type="text" id="intelArchiveFiles" class="form-control" placeholder="رابط الملف المرفوع حالياً" readonly>
+                        
+                        <button class="btn-action" style="background:linear-gradient(135deg, var(--primary-gold), #8a6d3b); color:black;" onclick="saveIntelArchiveCloud()">تثبيت وتأمين الأرشيف السري</button>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; border:1px solid var(--success-green); margin-top:15px;">
+                        <h4 style="color:var(--success-green); margin-top:0;">🗳️ صناديق وبيانات الاقتراع الموجهة للمديرية:</h4>
+                        <div id="intelElectionsDataFeed" style="font-size:13px; color:#fff; white-space:pre-wrap;">لا توجد بيانات اقتراع مرسلة حالياً.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="centralBankPage">
+                <div class="panel-box" style="border:2px solid var(--bank-gold); background:rgba(15,20,10,0.95);">
+                    <h3 style="color:var(--bank-gold);">🏛️ السياسة النقدية والتحكم الشامل بالسوق - لوحة محافظ البنك المركزي (638)</h3>
+                    
+                    <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,215,0,0.2);">
+                        <h4 style="color:var(--bank-gold); margin-top:0;">💰 الميزانية العامة والتحكم بالسيولة الحزبية:</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">الميزانية الكلية الكلية:</label>
+                                <div id="bankTotalBudgetDisplay" style="font-size:18px; color:var(--bank-gold); font-weight:bold; margin-top:4px;">0 أكة</div>
+                            </div>
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">تحديث الميزانية الكلية:</label>
+                                <input type="number" id="bankNewBudgetInput" class="form-control" placeholder="أدخل الميزانية الجديدة" style="margin-bottom:0;">
+                            </div>
+                        </div>
+                        <button class="btn-action" style="background:linear-gradient(135deg, var(--bank-gold), #8a6d3b); color:black;" onclick="updatePartyTotalBudgetCloud()">تحديث وتأمين ميزانية الحزب</button>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid var(--primary-gold);">
+                        <h4 style="color:var(--bank-gold); margin-top:0;">🏦 تهيئة وضبط نظام الاقتراض العام للأعضاء:</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">الحد الأقصى للقرض:</label>
+                                <input type="number" id="bankMaxLoanInput" class="form-control" placeholder="مثال: 5000">
+                            </div>
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">نسبة الفائدة المفروضة (%):</label>
+                                <input type="number" id="bankLoanInterestInput" class="form-control" placeholder="مثال: 10">
+                            </div>
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">مهلة السداد (بالدقائق):</label>
+                                <input type="number" id="bankLoanDurationInput" class="form-control" placeholder="مثال: 30">
+                            </div>
+                        </div>
+                        <button class="btn-action" style="background:var(--primary-gold); color:black;" onclick="saveBankLoanPolicySettingsCloud()">تثبيت وإتاحة نظام الاقتراض سحابياً 📜</button>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,215,0,0.15);">
+                        <h4 style="color:var(--bank-gold); margin-top:0;">⚖️ إدارة رواتب ونقل أموال وحسابات الأعضاء:</h4>
+                        <select id="bankMemberSelector" class="form-control"></select>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">الراتب المحدد (أكة):</label>
+                                <input type="number" id="bankSalaryInput" class="form-control" placeholder="الراتب المحدد للعضو">
+                            </div>
+                            <div>
+                                <label style="font-size:11px; color:#bbb;">فرض وتوقيع غرامة مالية انضباطية:</label>
+                                <input type="number" id="bankFineInput" class="form-control" placeholder="قيمة الغرامة المستقطعة">
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <button class="btn-action" style="background:#2e7d32; color:white;" onclick="executeBankSalaryUpdate()">تثبيت وتحديث الراتب</button>
+                            <button class="btn-action" style="background:var(--danger-red); color:white;" onclick="executeBankFineEnforcement()">تنفيذ العقوبة وسحب الغرامة</button>
+                        </div>
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; border:1px solid var(--primary-gold);">
+                        <h4 style="color:var(--primary-gold); margin-top:0;">📋 جدول الحسابات السيادي وميزان الرواتب والقروض (أكة):</h4>
+                        <div style="overflow-x:auto;">
+                            <table class="bank-table">
+                               <thead>
+                                   <tr>
+                                       <th>اسم العضو</th>
+                                       <th>المنصب الحالي</th>
+                                       <th>الراتب المحدد</th>
+                                       <th>الرصيد المتاح</th>
+                                       <th>القروض المستحقة</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="bankAccountsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="adminPage">
+                <div class="panel-box" style="border:1px solid var(--primary-gold);">
+                    <h3>منظومة القيادة والتدابير السيادية العليا (530)</h3>
+                    <p>إصدار البيانات العاجلة والمراسيم والقرارات السيادية مباشرة إلى شريط المستجدات لعامة الأعضاء.</p>
+                    <textarea id="adminDecreeContent" class="form-control" rows="3" placeholder="نص المرسوم أو القرار السيادي الصادر..."></textarea>
+                    <button class="btn-action" onclick="publishAdminDecreeCloud()">📢 إعلان وبث القرار رسمياً</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const coreSecKey = "530"; 
+        const chiefJudgeKey = "392";
+        const intelDirectorKey = "511";
+        const electionOfficerKey = "710"; 
+        const bankGovernorKey = "638"; 
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDmbzSfFw6kFKfwBq31EmR8gGd6k-fQ3YQ",
+          authDomain: "alfuars-1c163.firebaseapp.com",
+          databaseURL: "https://alfuars-1c163-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "alfuars-1c163",
+          storageBucket: "alfuars-1c163.firebasestorage.app",
+          messagingSenderId: "1088747369516",
+          appId: "1:1088747369516:web:b5786ea521163fb70a4d89",
+          measurementId: "G-3VDVLBHM80"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let activeDB = {};
+        let newsFeed = [];
+        let departmentsList = {};
+        let courtCasesList = {};
+        let candidatesList = {};
+        let electionStatus = {};
+        let marketItemsList = {};
+        let loanPolicy = { maxAmount: 1000, interest: 5, duration: 60 };
+        let loggedInUser = null;
+        let matchedSerialKey = "";
+        let partyBudget = 0;
+        let showOnlyJudgeRecords = false;
+
+        function showToast(msg) {
+            const toast = document.getElementById('appToast');
+            toast.innerHTML = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // المزامنة الكبرى والشاملة لبيانات الأعضاء السحابية
+        db.ref('party_master_data').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return; 
+            activeDB = data;
+            
+            if (loggedInUser) {
+                for (let k in activeDB) {
+                    if (String(activeDB[k].id).trim() === String(loggedInUser.id).trim()) {
+                        loggedInUser = activeDB[k];
+                        matchedSerialKey = k;
+                        syncIdentityCardFields();
+                        checkMandatoryCourtFineLockout(); // التحقق التلقائي من الحظر المالي القضائي
+                        break;
+                    }
+                }
+                refreshAdminRolesDisplay();
+            }
+            populateSelectBoxesGlobal();
+            renderBankAccountsTable();
+        });
+
+        // مزامنة السياسة النقدية للقروض ومحاكاة الاستحقاقات ماليّاً
+        db.ref('party_central_bank/loan_policy').on('value', (snapshot) => {
+            if(snapshot.val()) loanPolicy = snapshot.val();
+            renderMarketItemsAndLoanPanel(); 
+        });
+
+        // قفل القضاء التلقائي الإجباري لحين سداد الغرامة المفروضة للأعضاء
+        function checkMandatoryCourtFineLockout() {
+            if(!loggedInUser) return;
+            const lockoutOverlay = document.getElementById('courtLockoutOverlay');
+            const pendingFine = loggedInUser.mandatoryFine || 0;
+            
+            if (pendingFine > 0) {
+                lockoutOverlay.style.display = "flex";
+                document.getElementById('courtLockoutFineAmount').innerText = pendingFine + " أكة";
+                document.getElementById('courtLockoutUserBalance').innerText = `رصيدك الحالي المتاح: ${loggedInUser.balance || 0} أكة`;
+            } else {
+                lockoutOverlay.style.display = "none";
+            }
+        }
+
+        // تسديد الغرامة القضائية المفروضة آلياً وتحويلها لحساب مجلس القضاء الأعلى
+        function payMandatoryCourtFineCloud() {
+            if(!loggedInUser || !matchedSerialKey) return;
+            const fine = loggedInUser.mandatoryFine || 0;
+            const balance = loggedInUser.balance || 0;
+
+            if (balance < fine) {
+                showToast("❌ رصيدك الحالي غير كافٍ لتسديد الكفالة/الغرامة القضائية المفروضة لإلغاء القفل.");
+                return;
+            }
+
+            let newBalance = balance - fine;
+            db.ref(`party_master_data/${matchedSerialKey}`).update({
+                balance: newBalance,
+                mandatoryFine: 0
+            }).then(() => {
+                // إيداع الأموال تلقائياً لحساب ميزانية مجلس القضاء الأعلى
+                db.ref('party_central_bank/court_judiciary_budget').transaction(curr => (curr || 0) + fine);
+                db.ref('news_feed').push().set({
+                    title: `⚖️ إشعار سداد مالي قضائي معتمد`,
+                    content: `قام العضو [${loggedInUser.name}] بتسديد الغرامة المالية المترتبة عليه بقيمة ${fine} أكة بالكامل، وتم استعادة صلاحياته السيادية في النظام وتوريد الأموال لحساب مجلس القضاء الأعلى.`,
+                    date: new Date().toLocaleDateString('ar-EG')
+                });
+                showToast("✅ تم السداد بنجاح وإلغاء القيد الانضباطي وتفعيل الصلاحيات فوراً!");
+            });
+        }
+
+        // إيماء وميكرو تفاعل إظهار الرصيد الحالي الصغير في أسفل الشاشة
+        function toggleWalletGestureDisplay() {
+            const walletBox = document.getElementById('floatingWallet');
+            if (walletBox.classList.contains('expanded')) {
+                walletBox.classList.remove('expanded');
+            } else {
+                walletBox.classList.add('expanded');
+                document.getElementById('floatingWalletBalanceDisplay').innerText = `محفظتك: ${loggedInUser.balance || 0} أكة`;
+            }
+        }
+
+        // مزامنة السوق المفتوح للأعضاء (البيع والشراء بالصور والمناصب)
+        db.ref('party_market_open_offers').on('value', (snapshot) => {
+            marketItemsList = snapshot.val() || {};
+            renderMarketItemsAndLoanPanel();
+        });
+
+        // ترميز صور المبيعات من الجهاز
+        function encodeMarketOfferFile(evt) {
+            const file = evt.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('marketOfferImageBase64').value = e.target.result;
+                showToast("📸 تم ترميز صورة السلعة/المنصب وجاهزة للطرح بالسوق.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // طرح سلعة أو منصب أو وسام للبيع بالسوق السحابي
+        function submitNewMarketOfferCloud() {
+            if(!loggedInUser) return;
+            const title = document.getElementById('marketOfferTitle').value.trim();
+            const price = parseInt(document.getElementById('marketOfferPrice').value);
+            const image64 = document.getElementById('marketOfferImageBase64').value;
+
+            if(!title || isNaN(price) || price <= 0) { showToast("يرجى إكمال بيانات الشيء وتحديد السعر الصحيح."); return; }
+
+            db.ref('party_market_open_offers').push().set({
+                title: title,
+                price: price,
+                image: image64 || "",
+                sellerName: loggedInUser.name,
+                sellerFirebaseKey: matchedSerialKey,
+                sellerId: loggedInUser.id
+            }).then(() => {
+                document.getElementById('marketOfferTitle').value = "";
+                document.getElementById('marketOfferPrice').value = "";
+                document.getElementById('marketOfferImageBase64').value = "";
+                document.getElementById('marketOfferFilePicker').value = "";
+                showToast(`✅ تم إدراج [${title}] بنجاح في السوق المالي للحزب.`);
+            });
+        }
+
+        // دالة شراء المنتجات والمناصب من السوق وتحويل الأموال تلقائياً للبائع
+        function buyMarketItemCloud(itemKey, title, price, sellerKey, sellerName) {
+            if(!loggedInUser) return;
+            if(sellerKey === matchedSerialKey) { showToast("❌ لا يمكنك شراء مادة قمت أنت بطرحها في السوق."); return; }
+            
+            let buyerBalance = loggedInUser.balance || 0;
+            if (buyerBalance < price) {
+                showToast(`❌ رصيدك المتاح (${buyerBalance} أكة) لا يكفي لإتمام هذه الصفقة السيادية.`);
+                return;
+            }
+
+            // تنفيذ الصفقة التبادلية الكبرى والتحديث المتزامن
+            db.ref(`party_master_data/${matchedSerialKey}/balance`).set(buyerBalance - price).then(() => {
+                db.ref(`party_master_data/${sellerKey}/balance`).transaction(curr => (curr || 0) + price);
+                db.ref(`party_market_open_offers/${itemKey}`).remove(); // إزالة العنصر بعد البيع بنجاح
+
+                db.ref('news_feed').push().set({
+                    title: `🤝 إتمام معاملة تجارية في سوق الحزب المالي`,
+                    content: `تم بيع وشراء: [${title}] بنجاح مالي مبرم. المشتري: [${loggedInUser.name}] | البائع المستلم للأموال: [${sellerName}] بمبلغ وقدره ${price} أكة مباشرة لحسابه الخاص.`,
+                    date: new Date().toLocaleDateString('ar-EG')
+                });
+                showToast(`🎉 مبروك! تم شراء ${title} بنجاح وتحويل الأموال للبائع المعتمد.`);
+            });
+        }
+
+        // آلية طلب اقتراض مبالغ مالية مباشرة من البنك المركزي للأعضاء
+        function executeUserLoanApplication() {
+            if(!loggedInUser || !matchedSerialKey) return;
+            if(loggedInUser.activeLoanAmount && loggedInUser.activeLoanAmount > 0) {
+                showToast(`❌ لديك قرض نشط سابق بقيمة ${loggedInUser.activeLoanAmount} أكة. يجب سداده أولاً.`);
+                return;
+            }
+
+            const amount = parseInt(document.getElementById('userLoanRequestAmount').value);
+            if(isNaN(amount) || amount <= 0 || amount > loanPolicy.maxAmount) {
+                showToast(`❌ عذراً، الحد الأقصى للاقتراض المسموح به حالياً هو ${loanPolicy.maxAmount} أكة.`);
+                return;
+            }
+
+            let interestAmount = Math.round((amount * (loanPolicy.interest || 0)) / 100);
+            let totalRepayment = amount + interestAmount;
+
+            db.ref(`party_master_data/${matchedSerialKey}`).update({
+                balance: (loggedInUser.balance || 0) + amount,
+                activeLoanAmount: amount,
+                loanRepaymentTotal: totalRepayment,
+                loanDueDate: Date.now() + (parseInt(loanPolicy.duration || 10) * 60000)
+            }).then(() => {
+                db.ref('party_central_bank/total_budget').transaction(curr => (curr || 0) - amount);
+                showToast(`🏦 تم قبول القرض وضخ ${amount} أكة في محفظتك. إجمالي السداد المستحق لاحقاً: ${totalRepayment} أكة.`);
+                document.getElementById('userLoanRequestAmount').value = "";
+            });
+        }
+
+        // سداد قرض البنك المركزي وإعادة الأموال للخزينة الكلية
+        function repayUserActiveLoanCloud() {
+            if(!loggedInUser || !matchedSerialKey) return;
+            const repaymentTotal = loggedInUser.loanRepaymentTotal || 0;
+            const currentBalance = loggedInUser.balance || 0;
+
+            if(currentBalance < repaymentTotal) {
+                showToast(`❌ رصيدك الحالي (${currentBalance} أكة) غير كافٍ لتغطية القرض والفوائد المستحقة (${repaymentTotal} أكة).`);
+                return;
+            }
+
+            db.ref(`party_master_data/${matchedSerialKey}`).update({
+                balance: currentBalance - repaymentTotal,
+                activeLoanAmount: 0,
+                loanRepaymentTotal: 0,
+                loanDueDate: 0
+            }).then(() => {
+                db.ref('party_central_bank/total_budget').transaction(curr => (curr || 0) + repaymentTotal);
+                showToast("✅ تم سداد كامل القرض مع الفوائد وإبراء ذمتك المالية للبنك المركزي بنجاح.");
+            });
+        }
+
+        // حفظ سياسات البنك المركزي من قبل المحافظ 638
+        function saveBankLoanPolicySettingsCloud() {
+            const maxAm = parseInt(document.getElementById('bankMaxLoanInput').value);
+            const interest = parseInt(document.getElementById('bankLoanInterestInput').value);
+            const duration = parseInt(document.getElementById('bankLoanDurationInput').value);
+
+            if(isNaN(maxAm) || isNaN(interest) || isNaN(duration)) { showToast("يرجى إكمال كافة قيم وأرقام السياسة الائتمانية."); return; }
+
+            db.ref('party_central_bank/loan_policy').set({
+                maxAmount: maxAm, interest: interest, duration: duration
+            }).then(() => { showToast("🏛️ تم تثبيت واعتماد سياسة الاقتراض الجديدة وتعميمها بالسوق سحابياً."); });
+        }
+
+        // كبس تبديل وعزل رؤية سجل الدعاوي الحصري للقاضي 392
+        function toggleJudgeSovereignLogs() {
+            showOnlyJudgeRecords = !showOnlyJudgeRecords;
+            const btn = document.getElementById('judgeSecretRecordsBtn');
+            if(showOnlyJudgeRecords) {
+                btn.innerText = "📂 عرض كافة قضايا ومخالفات المنظومة العليا";
+                showToast("🔓 تم تفعيل الفلتر: استعراض القضايا قيد المداولة لسيادتكم.");
+            } else {
+                btn.innerText = "📂 كبس للاستعراض القضائي المتكامل (الرمز 392)";
+            }
+            renderCourtCasesFeed();
+        }
+
+        // مزامنة الميزانية الكلية للبنك المركزي
+        db.ref('party_central_bank/total_budget').on('value', (snapshot) => {
+            partyBudget = snapshot.val() || 0;
+            const node = document.getElementById('bankTotalBudgetDisplay');
+            if(node) node.innerText = partyBudget + " أكة";
+        });
+
+        // مزامنة إعدادات الواجهة والتحكم بمديرية الأمن 511
+        db.ref('system_layout_config').on('value', (snapshot) => {
+            const cfg = snapshot.val();
+            if(cfg) {
+                if(cfg.country) document.getElementById('idCountryTitle').innerText = cfg.country;
+                if(cfg.party) document.getElementById('idPartyTitle').innerText = cfg.party;
+                if(cfg.navTitle) document.getElementById('navTitle').innerText = cfg.navTitle;
+                
+                if(cfg.customFieldField && cfg.customFieldField.trim() !== "") {
+                    let container = document.getElementById('idCardFieldsContainer');
+                    let existingCustom = document.getElementById('dyn_custom_field_box');
+                    if(!existingCustom) {
+                        let div = document.createElement('div');
+                        div.className = "card-field";
+                        div.id = "dyn_custom_field_box";
+                        div.innerHTML = `<div class="field-lbl" id="lbl_custom">${cfg.customFieldField}</div><div class="field-val" id="f_custom">-</div>`;
+                        container.appendChild(div);
+                    } else {
+                        document.getElementById('lbl_custom').innerText = cfg.customFieldField;
+                    }
+                    if(loggedInUser) {
+                        let node = document.getElementById('f_custom');
+                        if(node) node.innerText = loggedInUser.customFieldValue || "-";
+                    }
+                }
+            }
+        });
+
+        db.ref('intel_dispatched_elections').on('value', (snapshot) => {
+            const val = snapshot.val();
+            const node = document.getElementById('intelElectionsDataFeed');
+            if(node && val) {
+                node.innerText = val.reportText || "لا توجد سجلات حالية.";
+            }
+        });
+
+        db.ref('party_departments_data').on('value', (snapshot) => {
+            departmentsList = snapshot.val() || {};
+            if(loggedInUser) {
+                renderDepartmentsFeed();
+                renderEndorsementsFeed();
+            }
+        });
+
+        db.ref('court_cases_data').on('value', (snapshot) => {
+            courtCasesList = snapshot.val() || {};
+            if(loggedInUser) {
+                renderCourtCasesFeed();
+                populateIntelForm(); 
+            }
+        });
+
+        db.ref('constitution_data').on('value', (snapshot) => {
+            const text = snapshot.val() || "لم يتم صياغة مواد الدستور بعد.";
+            document.getElementById('constitutionFeedBox').innerText = text;
+            document.getElementById('constitutionContentInput').value = text;
+        });
+
+        db.ref('constitution_delegate').on('value', (snapshot) => {
+            window.constitutionDelegateId = snapshot.val() || "";
+            refreshAdminRolesDisplay();
+        });
+
+        db.ref('news_feed').on('value', (snapshot) => {
+            const list = []; snapshot.forEach(c => { let v = c.val(); v.firebaseKey = c.key; list.unshift(v); });
+            newsFeed = list; if(loggedInUser) renderNewsFeed();
+        });
+
+        db.ref('election_candidates').on('value', (snapshot) => {
+            candidatesList = snapshot.val() || {};
+            if(loggedInUser) renderElectionsFeed();
+        });
+
+        db.ref('election_status').on('value', (snapshot) => {
+            electionStatus = snapshot.val() || { state: "open" };
+            if(loggedInUser) {
+                renderElectionsFeed();
+                renderJudgeElectionApprovalPanel();
+            }
+        });
+
+        function handleLoginVerify() {
+            const inputVal = document.getElementById('loginIdInput').value.trim();
+            if(!inputVal) { showToast("الرجاء إدخال رمز الدخول الحزبي مسبقاً."); return; }
+
+            let recordFound = null; let currentKey = "";
+            for (const key in activeDB) {
+                if (String(activeDB[key].id).trim() === String(inputVal)) { 
+                    recordFound = activeDB[key]; 
+                    currentKey = key; 
+                    break; 
+                }
+            }
+
+            if (recordFound) {
+                loggedInUser = recordFound; matchedSerialKey = currentKey;
+                showToast(`تم التوثيق والامتثال بنجاح. أهلاً بك يا سيادة كادر الفوارس.`);
+                
+                document.getElementById('loginScreen').style.display = "none";
+                document.getElementById('appLayout').style.display = "flex";
+                document.getElementById('floatingWallet').style.display = "flex"; // عرض المحفظة آلياً بعد التسجيل
+                
+                syncIdentityCardFields();
+                checkMandatoryCourtFineLockout();
+                refreshAdminRolesDisplay();
+                switchPage('newsPage', document.querySelectorAll('.nav-tab-btn')[0]);
+            } else { 
+                showToast("الرمز المدخل غير مسجل برقم سيادي موحد بقاعدة البيانات."); 
+            }
+        }
+
+        function syncIdentityCardFields() {
+            document.getElementById('f_name').innerText = loggedInUser.name;
+            document.getElementById('f_pos').innerText = loggedInUser.pos;
+            document.getElementById('f_dept').innerText = loggedInUser.dept;
+            document.getElementById('f_home').innerText = loggedInUser.home;
+            document.getElementById('f_balance').innerText = (loggedInUser.balance || 0) + " أكة";
+            document.getElementById('f_serial').innerText = "[مؤمن ومحمي سحابياً]";
+            document.getElementById('b_birth').innerText = loggedInUser.birth;
+            document.getElementById('f_photo').src = loggedInUser.photo || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a059'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
+            document.getElementById('b_qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(loggedInUser.name)}`;
+            
+            let nodeCustom = document.getElementById('f_custom');
+            if(nodeCustom) nodeCustom.innerText = loggedInUser.customFieldValue || "-";
+            document.getElementById('floatingWalletBalanceDisplay').innerText = `محفظتك: ${loggedInUser.balance || 0} أكة`;
+        }
+
+        function refreshAdminRolesDisplay() {
+            if (!loggedInUser) return;
+            let currentIdStr = String(loggedInUser.id).trim();
+            let isSuperAdmin = (currentIdStr === coreSecKey);
+            let isJudge = (currentIdStr === chiefJudgeKey);
+            let isIntel = (currentIdStr === intelDirectorKey);
+            let isElectionOfficer = (currentIdStr === electionOfficerKey); 
+            let isBankGovernor = (currentIdStr === bankGovernorKey); 
+            let isConstitutionDelegate = (currentIdStr === String(window.constitutionDelegateId).trim());
+
+            if (isSuperAdmin) document.getElementById('userBadgeDisplay').innerText = "الأمين العام المطلق (530)";
+            else if (isJudge) document.getElementById('userBadgeDisplay').innerText = "رئيس مجلس القضاء الأعلى (بارق محمد)";
+            else if (isIntel) document.getElementById('userBadgeDisplay').innerText = "مدير الأمن والاستخبارات (حسين علاء)";
+            else if (isElectionOfficer) document.getElementById('userBadgeDisplay').innerText = "مسؤول الانتخابات (سجاد محمد)";
+            else if (isBankGovernor) document.getElementById('userBadgeDisplay').innerText = "محافظ البنك المركزي (عبد الله حامد)";
+            else document.getElementById('userBadgeDisplay').innerText = `عضو كادر موحد`;
+
+            document.getElementById('adminTabBtn').style.display = isSuperAdmin ? "block" : "none";
+            document.getElementById('secGenDeptsAdminBox').style.display = isSuperAdmin ? "block" : "none";
+            document.getElementById('intelTabBtn').style.display = isIntel ? "block" : "none";
+            document.getElementById('centralBankTabBtn').style.display = isBankGovernor ? "block" : "none";
+            
+            // إتاحة زر سجلات القضاء المتكامل حصرياً لصاحب الرقم 392
+            document.getElementById('judgeSecretRecordsBtn').style.display = isJudge ? "block" : "none";
+            
+            document.getElementById('constitutionEditorBox').style.display = (isJudge || isConstitutionDelegate) ? "block" : "none";
+            document.getElementById('memberPostBox').style.display = (loggedInUser.canPost !== false) ? "block" : "none";
+            
+            document.getElementById('electionCommitteePanel').style.display = (isElectionOfficer) ? "block" : "none";
+            document.getElementById('judgeElectionApprovalPanel').style.display = (isJudge && electionStatus.state === "pending_approval") ? "block" : "none";
+            
+            document.getElementById('specialEndorsementBox').style.display = (isJudge || isIntel) ? "block" : "none";
+
+            if (isIntel) initIntelDashboard();
+            if (isBankGovernor) initBankDashboard();
+        }
+
+        function switchPage(pageId, element) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active'); element.classList.add('active');
+
+            const container = document.getElementById('mainContainerBox');
+            if(pageId === 'chatPage') { container.classList.add('chat-mode'); } 
+            else { container.classList.remove('chat-mode'); }
+            
+            refreshAdminRolesDisplay();
+        }
+
+        // رندرة وبناء عناصر السوق المطور وجدول الاقتراض العام للأعضاء
+        function marketPurchaseDefaultAward(itemName, price) {
+            if(!loggedInUser) return;
+            let currentBalance = loggedInUser.balance || 0;
+            if(currentBalance < price) {
+                showToast(`❌ رصيدك المتاح (${currentBalance} أكة) لا يكفي لابتياع [${itemName}].`);
+                return;
+            }
+
+            db.ref(`party_master_data/${matchedSerialKey}/balance`).set(currentBalance - price).then(() => {
+                db.ref('party_central_bank/total_budget').transaction(curr => (curr || 0) + price);
+                db.ref('news_feed').push().set({
+                    title: `🥇 حيازة رتبة/وسام سيادي من المتجر المركزي`,
+                    content: `قام العضو [${loggedInUser.name}] بابتياع [${itemName}] بمبلغ ${price} أكة من الخزينة المركزية، وتم صب عوائد المعاملة بالبنك الموحد.`,
+                    date: new Date().toLocaleDateString('ar-EG')
+                });
+                showToast(`✅ تمت المعاملة! تم الحصول على ${itemName}.`);
+            });
+        }
+
+        function renderMarketItemsAndLoanPanel() {
+            const container = document.getElementById('marketItemsContainer'); if(!container) return;
+            container.innerHTML = "";
+
+            // إدراج السلع الافتراضية المركزية الثابتة أولاً
+            const defaults = [
+                { title: "🥇 وسام الفارس الذهبي من الدرجة الأولى", cost: 500, isDefault: true },
+                { title: "💼 ترقية رتبة حركية أو منصب مستشار مساعد", cost: 1500, isDefault: true }
+            ];
+
+            defaults.forEach(d => {
+                let card = document.createElement('div'); card.className = "market-item-card";
+                card.innerHTML = `<div class="market-item-details">
+                                    <span class="market-item-title">${d.title}</span>
+                                    <span class="market-item-cost">التكلفة: ${d.cost} أكة</span>
+                                    <span class="market-item-seller">جهة العرض: الخزينة العامة للفوارس</span>
+                                  </div>
+                                  <button class="btn-action" style="width:100px; padding:6px;" onclick="marketPurchaseDefaultAward('${d.title}', ${d.cost})">شراء فوري</button>`;
+                container.appendChild(card);
+            });
+
+            // إدراج المواد المعروضة ديناميكياً من قبل بقية الأعضاء بالصور والأسعار
+            for(let key in marketItemsList) {
+                let it = marketItemsList[key];
+                let imgTag = it.image ? `<img src="${it.image}" class="market-item-img">` : `<div style="width:50px; height:50px; background:#000; border:1px solid #333; border-radius:6px;"></div>`;
+                let card = document.createElement('div'); card.className = "market-item-card";
+                card.innerHTML = `${imgTag}
+                                  <div class="market-item-details">
+                                    <span class="market-item-title">📦 ${it.title}</span>
+                                    <span class="market-item-cost">السعر: ${it.price} أكة</span>
+                                    <span class="market-item-seller">العارض: ${it.sellerName}</span>
+                                  </div>
+                                  <button class="btn-action" style="width:100px; padding:6px; background:linear-gradient(135deg, var(--bank-gold), #b89200); color:black;" 
+                                      onclick="buyMarketItemCloud('${key}', '${it.title}', ${it.price}, '${it.sellerFirebaseKey}', '${it.sellerName}')">ابتياع الآن</button>`;
+                container.appendChild(card);
+            }
+
+            // إدراج لوحة القروض الديناميكية لعامة الأعضاء داخل واجهة السوق
+            let loanBox = document.createElement('div');
+            loanBox.style = "margin-top:25px; background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; border:1px dashed var(--bank-gold);";
+            
+            if(loggedInUser && loggedInUser.activeLoanAmount && loggedInUser.activeLoanAmount > 0) {
+                let minutesLeft = Math.max(0, Math.round((loggedInUser.loanDueDate - Date.now()) / 60000));
+                loanBox.innerHTML = `<h4 style="color:var(--bank-gold); margin-top:0;">🏦 التزامات القروض النشطة (البنك المركزي):</h4>
+                                     <div style="font-size:13px; line-height:1.6;">
+                                        المبلغ الذي اقترضته: <span style="color:var(--danger-red); font-weight:bold;">${loggedInUser.activeLoanAmount} أكة</span><br>
+                                        المبلغ الكلي الواجب سداده (مع الفائدة): <span style="color:var(--bank-gold); font-weight:bold;">${loggedInUser.loanRepaymentTotal} أكة</span><br>
+                                        الوقت المتبقي لانتهاء مهلة السداد: <span style="color:var(--danger-red);">${minutesLeft} دقيقة</span>
+                                     </div>
+                                     <button class="btn-action" style="background:#2e7d32; color:white; margin-top:10px;" onclick="repayUserActiveLoanCloud()">تسديد ذمة القرض كلياً 💸</button>`;
+            } else {
+                loanBox.innerHTML = `<h4 style="color:var(--bank-gold); margin-top:0;">🏦 طلب تمويل واقتراض مالي (البنك المركزي):</h4>
+                                     <p style="font-size:11px; color:#bbb; margin-bottom:10px;">السياسة الائتمانية النافذة: الفائدة ${loanPolicy.interest || 0}% | سقف التمويل الأقصى ${loanPolicy.maxAmount || 0} أكة | المدة المتاحة ${loanPolicy.duration || 0} دقيقة.</p>
+                                     <div style="display:flex; gap:10px;">
+                                        <input type="number" id="userLoanRequestAmount" class="form-control" placeholder="أدخل مبلغ القرض المطلوب" style="margin-bottom:0;">
+                                        <button class="btn-action" style="width:130px;" onclick="executeUserLoanApplication()">سحب القرض</button>
+                                     </div>`;
+            }
+            container.appendChild(loanBox);
+        }
+
+        function initBankDashboard() {
+            populateBankMemberSelector();
+            // تعبئة حقول المحافظ الافتراضية بناءً على السياسة الحالية
+            document.getElementById('bankMaxLoanInput').value = loanPolicy.maxAmount || "";
+            document.getElementById('bankLoanInterestInput').value = loanPolicy.interest || "";
+            document.getElementById('bankLoanDurationInput').value = loanPolicy.duration || "";
+        }
+
+        function populateBankMemberSelector() {
+            const el = document.getElementById('bankMemberSelector');
+            if(el) {
+                const savedVal = el.value;
+                el.innerHTML = "";
+                for(let key in activeDB) {
+                    let opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = `${activeDB[key].name} (${activeDB[key].pos})`;
+                    el.appendChild(opt);
+                }
+                if(savedVal && activeDB[savedVal]) el.value = savedVal;
+            }
+        }
+
+        function updatePartyTotalBudgetCloud() {
+            const newBudget = parseInt(document.getElementById('bankNewBudgetInput').value);
+            if(isNaN(newBudget) || newBudget < 0) { showToast("يرجى إدخال قيمة ميزانية صحيحة."); return; }
+            db.ref('party_central_bank/total_budget').set(newBudget).then(() => {
+                showToast("🏛️ تم إعادة تعيين الميزانية الكلية السيادية وتثبيتها سحابياً.");
+                document.getElementById('bankNewBudgetInput').value = "";
+            });
+        }
+
+        function executeBankSalaryUpdate() {
+            const targetKey = document.getElementById('bankMemberSelector').value;
+            const salaryVal = parseInt(document.getElementById('bankSalaryInput').value);
+            if(!targetKey || isNaN(salaryVal) || salaryVal < 0) { showToast("يرجى التأكد من البيانات والقيم المدخلة للراتب."); return; }
+
+            db.ref(`party_master_data/${targetKey}/salary`).set(salaryVal).then(() => {
+                db.ref(`party_master_data/${targetKey}/balance`).transaction(curr => (curr || 0) + salaryVal);
+                showToast(`💰 تم تعيين راتب بقيمة ${salaryVal} أكة للعضو [${activeDB[targetKey].name}] وضخه في حسابه.`);
+                document.getElementById('bankSalaryInput').value = "";
+            });
+        }
+
+        // إمكانية فرض البنك المركزي أو مجلس القضاء غرامات إلزامية مادية تجمد العضو فورياً
+        function executeBankFineEnforcement() {
+            const targetKey = document.getElementById('bankMemberSelector').value;
+            const fineVal = parseInt(document.getElementById('bankFineInput').value);
+            if(!targetKey || isNaN(fineVal) || fineVal <= 0) { showToast("يرجى تحديد قيمة غرامة مالية انضباطية صحيحة."); return; }
+
+            // فرض الغرامة كحقل إلزامي (mandatoryFine) يجبر العضو على دفعها لفك قفل الحساب
+            db.ref(`party_master_data/${targetKey}/mandatoryFine`).transaction(curr => (curr || 0) + fineVal).then(() => {
+                showToast(`⚠️ حكم عقوبة مالي إلزامية بقيمة ${fineVal} أكة فرضت على [${activeDB[targetKey].name}] وتم تجميد صلاحياته لحين السداد.`);
+                document.getElementById('bankFineInput').value = "";
+            });
+        }
+
+        function renderBankAccountsTable() {
+            const tbody = document.getElementById('bankAccountsTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            for(let key in activeDB) {
+                let m = activeDB[key];
+                let loanRepay = m.loanRepaymentTotal || 0;
+                let loanText = loanRepay > 0 ? `<span style="color:var(--danger-red); font-weight:bold;">${loanRepay} أكة</span>` : "لاشيء";
+                let tr = document.createElement('tr');
+                tr.innerHTML = `<td>${m.name}</td>
+                                <td>${m.pos}</td>
+                                <td style="color:var(--success-green); font-weight:bold;">${m.salary || 0} أكة</td>
+                                <td style="color:var(--bank-gold); font-weight:bold;">${m.balance || 0} أكة</td>
+                                <td>${loanText}</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        // شات ديوان الحوار المطور
+        db.ref('sovereign_chat_room').on('value', (snapshot) => {
+            const box = document.getElementById('chatMessagesBox'); box.innerHTML = "";
+            let canDelete = loggedInUser && (String(loggedInUser.id).trim() === coreSecKey || String(loggedInUser.id).trim() === intelDirectorKey);
+            
+            snapshot.forEach((child) => {
+                const msg = child.val(); const msgKey = child.key;
+                const bubble = document.createElement('div');
+                const isMyMsg = (loggedInUser && String(msg.senderId).trim() === String(loggedInUser.id).trim());
+                bubble.className = isMyMsg ? "chat-bubble msg-me" : "chat-bubble msg-other";
+                
+                let deleteBtn = canDelete ? `<button class="chat-delete-btn" style="display:block;" onclick="deleteChatMessageCloud('${msgKey}')">حذف ✕</button>` : "";
+
+                bubble.innerHTML = `${deleteBtn}
+                                    <div class="bubble-sender">${msg.senderName} (${msg.senderPos})</div>
+                                    <div class="bubble-body">${msg.text || ''}</div>
+                                    <div class="bubble-meta"><span>${msg.time}</span></div>`;
+                box.appendChild(bubble);
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+
+        function sendChatMessageCloudCore() {
+            const input = document.getElementById('chatMessageInput');
+            const text = input.value.trim(); if(!text) return;
+            if(loggedInUser.canPost === false) { showToast("🚫 صلاحيات النشر والارسال الخاصة بك مجمدة بطلب انضباطي."); return; }
+
+            db.ref('sovereign_chat_room').push().set({
+                senderId: loggedInUser.id, senderName: loggedInUser.name, senderPos: loggedInUser.pos,
+                text: text, time: new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})
+            }).then(() => { input.value = ""; });
+        }
+
+        function deleteChatMessageCloud(key) { db.ref(`sovereign_chat_room/${key}`).remove(); }
+
+        function saveConstitutionToCloud() {
+            const text = document.getElementById('constitutionContentInput').value.trim();
+            db.ref('constitution_data').set(text).then(() => { showToast("تم تحديث الدستور الأعلى للأحكام بنجاح."); });
+        }
+
+        function grantConstitutionDelegationCloud(shouldGrant) {
+            if(!shouldGrant) {
+                db.ref('constitution_delegate').remove().then(() => { showToast("تم سحب إلغاء التفويض الدستوري كلياً."); });
+            } else {
+                const targetMemberKey = document.getElementById('constitutionDelegateSelector').value;
+                if(!targetMemberKey) return;
+                const targetId = activeDB[targetMemberKey].id;
+                db.ref('constitution_delegate').set(targetId).then(() => { showToast(`تم تفويض [${activeDB[targetMemberKey].name}] بصلاحيات تعديل الدستور.`); });
+            }
+        }
+
+        function publishAdminDecreeCloud() {
+            const content = document.getElementById('adminDecreeContent').value.trim();
+            if(!content) return;
+            db.ref('news_feed').push().set({
+                title: "📢 مرسوم وقرار سيادي رئاسي عاجل",
+                content: content, date: "نافذ فوراً"
+            }).then(() => {
+                document.getElementById('adminDecreeContent').value = "";
+                showToast("تم بث وإعلان المرسوم السيادي على العامة.");
+            });
+        }
+
+        function createPartyDepartmentCloud() {
+            const title = document.getElementById('newDeptTitle').value.trim();
+            const job = document.getElementById('newDeptJob').value.trim();
+            if(!title || !job) { showToast("يرجى تعبئة بيانات الدائرة لتشييدها."); return; }
+
+            db.ref('party_departments_data').push().set({
+                name: title, job: job, perms: "تنفيذية مركزية", members: ""
+            }).then(() => {
+                document.getElementById('newDeptTitle').value = "";
+                document.getElementById('newDeptJob').value = "";
+                showToast(`تم تأسيس سحابة ${title} الفيدرالية بنجاح.`);
+            });
+        }
+
+        function addMemberToDeptCloud() {
+            const deptKey = document.getElementById('targetDeptSelector').value;
+            const memKey = document.getElementById('targetMemberToDeptSelector').value;
+            const specialPerm = document.getElementById('newMemberSpecialPerms').value;
+            if(!deptKey || !memKey) return;
+
+            let memberObj = {
+                name: activeDB[memKey].name,
+                pos: activeDB[memKey].pos,
+                keyRef: memKey,
+                specialPerm: specialPerm,
+                status: specialPerm === "none" ? "approved" : "pending_endorsement"
+            };
+
+            db.ref(`party_departments_data/${deptKey}/members`).push().set(memberObj).then(() => { 
+                showToast(`تم إصدار أمر التنسيب والإرسال بنجاح لوحة الانتظار.`); 
+            });
+        }
+
+        function endorseSpecialAppointmentCloud(deptKey, memberKey, isApproved) {
+            if(!isApproved) {
+                db.ref(`party_departments_data/${deptKey}/members/${memberKey}`).remove().then(() => { showToast("تم نقض ورفض أمر التعيين."); });
+            } else {
+                db.ref(`party_departments_data/${deptKey}/members/${memberKey}/status`).set("approved").then(() => { showToast("تمت المصادقة وتفعيل الصلاحيات والتنسيب رسمياً."); });
+            }
+        }
+
+        function renderEndorsementsFeed() {
+            const container = document.getElementById('endorsementsFeedBox'); if(!container) return;
+            container.innerHTML = "";
+            let isJudge = loggedInUser && String(loggedInUser.id).trim() === chiefJudgeKey;
+            let isIntel = loggedInUser && String(loggedInUser.id).trim() === intelDirectorKey;
+            let hasPending = false;
+
+            for(let dKey in departmentsList) {
+                let d = departmentsList[dKey];
+                if(d.members) {
+                    for(let mKey in d.members) {
+                        let m = d.members[mKey];
+                        if(m.status === "pending_endorsement") {
+                            let showBtn = false;
+                            let labelPerm = "";
+                            if(m.specialPerm === "court_appointment" && isJudge) { showBtn = true; labelPerm = "طلب تعيين بمجلس القضاء الأعلى"; }
+                            if(m.specialPerm === "intel_appointment" && isIntel) { showBtn = true; labelPerm = "طلب تعيين بمديرية الأمن والاستخبارات"; }
+
+                            if(showBtn) {
+                                hasPending = true;
+                                const item = document.createElement('div');
+                                item.style = "background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; border-right:3px solid var(--justice-blue); margin-bottom:5px;";
+                                item.innerHTML = `<div><strong>العضو:</strong> ${m.name} | <strong>المنصب:</strong> ${m.pos}</div>
+                                                  <div style="font-size:12px; color:var(--primary-gold);">الصلاحية المستهدفة: [${labelPerm}] المرفوعة من الأمانة العامة</div>
+                                                  <div style="margin-top:6px; display:flex; gap:5px;">
+                                                      <button class="btn-action" style="background:var(--success-green); font-size:11px; padding:4px; color:black;" onclick="endorseSpecialAppointmentCloud('${dKey}', '${mKey}', true)">✍️ مصادقة واعتماد</button>
+                                                      <button class="btn-action" style="background:var(--danger-red); font-size:11px; padding:4px;" onclick="endorseSpecialAppointmentCloud('${dKey}', '${mKey}', false)">❌ نقض وإلغاء</button>
+                                                  </div>`;
+                                container.appendChild(item);
+                            }
+                        }
+                    }
+                }
+            }
+            if(!hasPending) container.innerHTML = "<div style='opacity:0.6; font-size:11px;'>لا يوجد طلبات تعيين معلقة بانتظار مصادقتك السيادية حالياً.</div>";
+        }
+
+        function renderDepartmentsFeed() {
+            const container = document.getElementById('departmentsFeedBox'); container.innerHTML = "";
+            let isSecGen = loggedInUser && String(loggedInUser.id).trim() === coreSecKey;
+
+            for (let key in departmentsList) {
+                const d = departmentsList[key]; const block = document.createElement('div'); block.className = "dept-item";
+                let memsHtml = "<ul style='padding-right:20px; font-size:12px;'>";
+                if(d.members) {
+                    for(let mKey in d.members) {
+                        let m = d.members[mKey];
+                        let labelStatus = m.status === "pending_endorsement" ? " <span style='color:var(--primary-gold); font-weight:bold;'>[معلق بانتظار المصادقة]</span>" : " <span style='color:var(--success-green);'>[مصادق ومفعل]</span>";
+                        let delBtn = isSecGen ? ` <span style="color:var(--danger-red); cursor:pointer;" onclick="db.ref('party_departments_data/${key}/members/${mKey}').remove()">[إخراج]</span>` : "";
+                        memsHtml += `<li>👤 ${m.name} - (${m.pos}) ${labelStatus} ${delBtn}</li>`;
+                    }
+                }
+                memsHtml += "</ul>";
+                let actionBtn = isSecGen ? `<button class="remove-btn" style="display:block;" onclick="if(confirm('حذف وتصفية الدائرة؟')) db.ref('party_departments_data/${key}').remove()">تصفية الدائرة</button>` : "";
+
+                block.innerHTML = `<strong>💼 دائرة فيدرالية: ${d.name}</strong><br>
+                                   <span style="font-size:12px; color:var(--primary-gold);">🎯 النطاق الوظيفي:</span> ${d.job}<br>
+                                   <div style="margin-top:6px; font-weight:bold;">👥 الكوادر والموظفين المدرجين:</div> ${memsHtml} ${actionBtn}`;
+                container.appendChild(block);
+            }
+        }
+
+        function submitCourtCaseCloud() {
+            const accusedKey = document.getElementById('courtAccusedSelector').value;
+            const details = document.getElementById('courtCaseDetails').value.trim();
+            if(!accusedKey || !details) { showToast("يرجى اختيار العضو وتوضيح تفاصيل وحيثيات الشكوى."); return; }
+
+            db.ref('court_cases_data').push().set({
+                plaintiffName: loggedInUser.name,
+                accusedName: activeDB[accusedKey].name,
+                accusedFirebaseRefKey: accusedKey, 
+                details: details,
+                status: "تحت المداولة والتدقيق القضائي",
+                ruling: ""
+            }).then(() => {
+                document.getElementById('courtCaseDetails').value = "";
+                showToast("تم قيد الدعوى ومزامنتها رسمياً في ساحة المحكمة العليا.");
+            });
+        }
+
+        // معالجة الأحكام القضائية لـ بارق محمد (392) وتشمل فرض الغرامات المالية
+        function executeJudgeRulingAction(caseKey, actionType) {
+            const c = courtCasesList[caseKey];
+            let updates = {};
+            
+            if(actionType === 'evidence') {
+                updates.status = "موقوفة - بانتظار الدلائل";
+                updates.ruling = "أمر رئيس مجلس القضاء الأعلى: إلزام المشتكي بتقديم الدلائل الثبوتية فوراً للمجلس.";
+                db.ref(`court_cases_data/${caseKey}`).update(updates).then(() => { showToast("تم طلب الدلائل وتحديث ملف القضية."); });
+            } 
+            else if(actionType === 'acquit') {
+                updates.status = "مغلقة - براءة";
+                updates.ruling = "حكم مبرم: تبرئة المشكو في حقه من كافة التهم المنسوبة إليه لعدم كفاية الأدلة ثبوتاً.";
+                
+                db.ref(`court_cases_data/${caseKey}`).update(updates).then(() => {
+                    db.ref('news_feed').push().set({
+                        title: `⚖️ بيان حكم براءة صادر عن محكمة الفوارس العليا`,
+                        content: `بأمر سيادة رئيس مجلس القضاء الأعلى بارق محمد الثابتي، تقرر تبرئة [${c.accusedName}] في القضية المقامة ضده بشأن: (${c.details}).`,
+                        date: "رسمي وموثق"
+                    });
+                    showToast("تم إصدار ونشر حكم البراءة المبرم.");
+                });
+            }
+            else if(actionType === 'convict') {
+                const penaltyText = document.getElementById(`penalty_input_${caseKey}`).value.trim();
+                const fineAmount = parseInt(document.getElementById(`fine_input_${caseKey}`).value.trim());
+
+                if(!penaltyText) { showToast("يرجى كتابة وتحديد العقوبة الصادرة أولاً."); return; }
+
+                updates.status = "مغلقة - إدانة جنائية نافذة";
+                let fineRuleTxt = !isNaN(fineAmount) && fineAmount > 0 ? ` مع فرض غرامة مالية إلزامية بقيمة ${fineAmount} أكة لحساب مجلس القضاء.` : "";
+                updates.ruling = `قرار حكم إدانة: ثبت ارتكاب المخالفة، والعقوبة المقررة هي: [${penaltyText}]` + fineRuleTxt;
+
+                db.ref(`court_cases_data/${caseKey}`).update(updates).then(() => {
+                    db.ref('news_feed').push().set({
+                        title: `⚖️ بيان إدانة وعقوبة مبرم صادر عن مجلس القضاء الأعلى`,
+                        content: `بأمر سيادة رئيس مجلس القضاء الأعلى بارق محمد الثابتي، تقرر إدانة [${c.accusedName}] بـ العقوبة التالية: (${penaltyText})${fineRuleTxt} بناءً على ثبوت حيثيات الشكوى.`,
+                        date: "حكم نافذ"
+                    });
+
+                    // إدراج الغرامة المالية الإلزامية في حساب العضو لقفله تزامناً مع الحكم القضائي
+                    if(!isNaN(fineAmount) && fineAmount > 0 && c.accusedFirebaseRefKey) {
+                        db.ref(`party_master_data/${c.accusedFirebaseRefKey}/mandatoryFine`).transaction(curr => (curr || 0) + fineAmount);
+                    }
+
+                    if(c.accusedFirebaseRefKey && activeDB[c.accusedFirebaseRefKey]) {
+                        let currentArchive = activeDB[c.accusedFirebaseRefKey].intelArchiveReports || "";
+                        let updatedArchive = `⚠️ قيد جنائي مبرم من رئيس مجلس القضاء بارق محمد الثابتي:\n- التهمة: ${c.details}\n- الحكم والعقوبة: ${penaltyText}\n------------------------\n` + currentArchive;
+                        db.ref(`party_master_data/${c.accusedFirebaseRefKey}/intelArchiveReports`).set(updatedArchive);
+                    }
+
+                    showToast("تم النطق بحكم الإدانة وتطبيق التدابير القضائية المبرمة.");
+                });
+            }
+        }
+
+        function renderCourtCasesFeed() {
+            const container = document.getElementById('courtCasesFeedBox'); container.innerHTML = "";
+            let isJudge = loggedInUser && String(loggedInUser.id).trim() === chiefJudgeKey;
+
+            for(let key in courtCasesList) {
+                const c = courtCasesList[key];
+                
+                // عزل ورؤية القضايا المخصصة لفلترة الاستعراض الذكي للرقم 392
+                if(showOnlyJudgeRecords && c.status.includes("مغلقة")) {
+                    continue; 
+                }
+
+                const item = document.createElement('div'); item.className = "court-item";
+                
+                let judgeControl = "";
+                if(isJudge) {
+                    judgeControl = `
+                    <div style="margin-top:10px; background:rgba(0,0,0,0.4); padding:10px; border-radius:8px; border:1px solid rgba(197,160,89,0.2);">
+                        <label style="font-size:11px; color:var(--primary-gold); display:block; margin-bottom:4px;">مربع الإجراءات القضائية الحصرية (بارق محمد):</label>
+                        <input type="text" id="penalty_input_${key}" class="form-control" placeholder="اكتب العقوبة التفصيلية هنا (في حال حكم الإدانة)..." style="font-size:12px; padding:6px; margin-bottom:8px;">
+                        <input type="number" id="fine_input_${key}" class="form-control" placeholder="أدخل قيمة الغرامة المالية/الكفالة (أكة) - اختياري" style="font-size:12px; padding:6px; margin-bottom:8px;">
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button class="btn-action" style="background:#e65100; font-size:11px; padding:6px; flex:1;" onclick="executeJudgeRulingAction('${key}', 'evidence')">📋 طلب دليل</button>
+                            <button class="btn-action" style="background:var(--success-green); font-size:11px; padding:6px; flex:1; color:black;" onclick="executeJudgeRulingAction('${key}', 'acquit')">✅ حكم براءة</button>
+                            <button class="btn-action" style="background:var(--danger-red); font-size:11px; padding:6px; flex:1;" onclick="executeJudgeRulingAction('${key}', 'convict')">⚖️ إدانة وتوقيع العقوبة والغرامة</button>
+                        </div>
+                    </div>`;
+                }
+                let delBtn = isJudge ? `<button class="remove-btn" style="display:block;" onclick="if(confirm('شطب وإلغاء القضية نهائياً من السجلات؟')) db.ref('court_cases_data/${key}').remove()">شطب الدعوى</button>` : "";
+
+                item.innerHTML = `<strong>🏛️ قيد دعوى قضائية رقم: ${key.substring(1,7)}</strong><br>
+                                  <span>👤 المشتكي البادئ:</span> ${c.plaintiffName} <br>
+                                  <span style="color:var(--danger-red);">🛑 المدعى عليه المشكو في حقه:</span> ${c.accusedName} <br>
+                                  <p style="background:rgba(0,0,0,0.3); padding:8px; border-radius:4px; margin:5px 0; font-size:13px;">📋 موضوع الشكوى والحيثيات: ${c.details}</p>
+                                  <div style="color:var(--primary-gold); font-weight:bold; font-size:12px;">الحالة القضائية الحالية: [${c.status}]</div>
+                                  <div style="color:#fff; font-weight:bold; margin-top:3px; font-size:13px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:4px;">📢 منطوق الحكم الصادر: <span style="color:var(--primary-gold);">${c.ruling || 'قيد الدراسة والتدقيق القضائي'}</span></div>
+                                  ${judgeControl} ${delBtn}`;
+                container.appendChild(item);
+            }
+        }
+
+        function initIntelDashboard() {
+            populateIntelForm();
+        }
+
+        function populateSelectBoxesGlobal() {
+            const boxes = ['courtAccusedSelector', 'intelMemberSelector', 'constitutionDelegateSelector', 'targetMemberToDeptSelector', 'bankMemberSelector'];
+            boxes.forEach(boxId => {
+                const el = document.getElementById(boxId);
+                if(el) {
+                    const savedVal = el.value;
+                    el.innerHTML = "";
+                    for(let key in activeDB) {
+                        let opt = document.createElement('option');
+                        opt.value = key;
+                        opt.innerText = `${activeDB[key].name} (${activeDB[key].pos})`;
+                        el.appendChild(opt);
+                    }
+                    if(savedVal && activeDB[savedVal]) el.value = savedVal;
+                }
+            });
+
+            const deptSel = document.getElementById('targetDeptSelector');
+            if(deptSel) {
+                const savedDept = deptSel.value;
+                deptSel.innerHTML = "";
+                for(let key in departmentsList) {
+                    let opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = departmentsList[key].name;
+                    deptSel.appendChild(opt);
+                }
+                if(savedDept && departmentsList[savedDept]) deptSel.value = savedDept;
+            }
+        }
+
+        function populateIntelForm() {
+            const key = document.getElementById('intelMemberSelector').value;
+            if(!key || !activeDB[key]) return;
+            const m = activeDB[key];
+            document.getElementById('int_name').value = m.name || "";
+            document.getElementById('int_pos').value = m.pos || "";
+            document.getElementById('int_id').value = m.id || "";
+            document.getElementById('int_home').value = m.home || "";
+            document.getElementById('int_birth').value = m.birth || "";
+            document.getElementById('int_dept').value = m.dept || "";
+            document.getElementById('intelArchiveReports').value = m.intelArchiveReports || "";
+            document.getElementById('intelArchiveFiles').value = m.photo || "";
+            document.getElementById('intelMemberRating').value = m.intelRating || "";
+            document.getElementById('int_custom_val').value = m.customFieldValue || "";
+        }
+
+        function saveSystemLayoutConfig() {
+            const country = document.getElementById('cfg_country').value.trim();
+            const party = document.getElementById('cfg_party').value.trim();
+            const navTitle = document.getElementById('cfg_nav_title').value.trim();
+            const customFieldField = document.getElementById('cfg_new_field_lbl').value.trim();
+
+            let updates = {};
+            if(country) updates.country = country;
+            if(party) updates.party = party;
+            if(navTitle) updates.navTitle = navTitle;
+            if(customFieldField) updates.customFieldField = customFieldField;
+
+            db.ref('system_layout_config').update(updates).then(() => {
+                showToast("تم تحديث وبث البنية الهيكلية والعناوين المعدلة للنظام بنجاح.");
+            });
+        }
+
+        function uploadIntelArchiveFile(evt) {
+            const file = evt.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('intelArchiveFiles').value = e.target.result;
+                showToast("تم ترميز المرفق بنجاح وجاهز للتأمين السحابي بالأرشيف.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function executeIntelUpdateCloud(isNew) {
+            const key = document.getElementById('intelMemberSelector').value;
+            let targetRef = isNew ? db.ref('party_master_data').push() : db.ref(`party_master_data/${key}`);
+            
+            let obj = {
+                name: document.getElementById('int_name').value.trim(),
+                pos: document.getElementById('int_pos').value.trim(),
+                id: document.getElementById('int_id').value.trim(),
+                home: document.getElementById('int_home').value.trim(),
+                birth: document.getElementById('int_birth').value.trim(),
+                dept: document.getElementById('int_dept').value.trim(),
+                intelArchiveReports: document.getElementById('intelArchiveReports').value.trim(),
+                photo: document.getElementById('intelArchiveFiles').value.trim(),
+                intelRating: document.getElementById('intelMemberRating').value.trim(),
+                customFieldValue: document.getElementById('int_custom_val').value.trim()
+            };
+
+            targetRef.update(obj).then(() => {
+                showToast(isNew ? "تم قيد وإضافة العضو الجديد بنجاح." : "تم تعديل وحفظ بيانات العضو والأرشيف الاستخباراتي.");
+            });
+        }
+
+        function executeIntelDeleteMember() {
+            const key = document.getElementById('intelMemberSelector').value;
+            if(!key) return;
+            if(confirm("هل أنت متأكد من حذف هذا القيد الحزبي كلياً ونهائياً من المنظومة؟")) {
+                db.ref(`party_master_data/${key}`).remove().then(() => { showToast("تم حذف وإسقاط القيد بنجاح."); });
+            }
+        }
+
+        function toggleIntelPosting(canPost) {
+            const key = document.getElementById('intelMemberSelector').value;
+            if(!key) return;
+            db.ref(`party_master_data/${key}/canPost`).set(canPost).then(() => {
+                showToast(canPost ? "تم تفعيل صلاحيات النشر والارسال الحزبي." : "🚫 تم تجميد وحظر صلاحيات النشر والدردشة.");
+            });
+        }
+
+        function saveIntelArchiveCloud() {
+            const key = document.getElementById('intelMemberSelector').value;
+            if(!key) return;
+            const text = document.getElementById('intelArchiveReports').value.trim();
+            const rating = document.getElementById('intelMemberRating').value.trim();
+            const fileData = document.getElementById('intelArchiveFiles').value.trim();
+
+            db.ref(`party_master_data/${key}`).update({
+                intelArchiveReports: text,
+                intelRating: rating,
+                photo: fileData
+            }).then(() => {
+                showToast("تم تأمين وحفظ الأرشيف السري الاستخباراتي والتقييم بنجاح.");
+            });
+        }
+
+        function createMemberPostCloud() {
+            const text = document.getElementById('memberPostContent').value.trim();
+            const photo = document.getElementById('memberPostPhoto').value.trim();
+            if(!text) return;
+
+            db.ref('news_feed').push().set({
+                title: `✍️ منشور من: ${loggedInUser.name} (${loggedInUser.pos})`,
+                content: text,
+                photo: photo,
+                date: new Date().toLocaleDateString('ar-EG')
+            }).then(() => {
+                document.getElementById('memberPostContent').value = "";
+                document.getElementById('memberPostPhoto').value = "";
+                showToast("تم نشر تحديثك على العامة في المستجدات.");
+            });
+        }
+
+        function renderNewsFeed() {
+            const container = document.getElementById('newsFeedBox'); container.innerHTML = "";
+            let canDelete = loggedInUser && (String(loggedInUser.id).trim() === coreSecKey || String(loggedInUser.id).trim() === intelDirectorKey);
+
+            newsFeed.forEach(item => {
+                const card = document.createElement('div'); card.className = "news-card";
+                let imgHtml = item.photo ? `<br><img src="${item.photo}" style="max-width:100%; border-radius:8px; margin-top:8px; border:1px solid rgba(197,160,89,0.3);">` : "";
+                let delBtn = canDelete ? `<button class="remove-btn" style="display:block;" onclick="db.ref('news_feed/${item.firebaseKey}').remove()">شطب المنشور</button>` : "";
+
+                card.innerHTML = `<strong>${item.title}</strong> <span style="font-size:10px; opacity:0.5; float:left;">${item.date}</span><br>
+                                  <p style="margin:8px 0; font-size:13.5px; line-height:1.5; white-space:pre-wrap;">${item.content}</p>${imgHtml} ${delBtn}`;
+                container.appendChild(card);
+            });
+        }
+
+        function uploadUserImageToServer(evt) {
+            const file = evt.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                db.ref(`party_master_data/${matchedSerialKey}/photo`).set(base64).then(() => {
+                    showToast("تم تحديث وحفظ الصورة الشخصية السيادية بنجاح.");
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleOnlineListFlow() {
+            const flow = document.getElementById('onlineUsersBox');
+            flow.style.display = (flow.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function addNewCandidateFileCloud() {
+            const name = document.getElementById('newCandidateName').value.trim();
+            const pos = document.getElementById('newCandidatePos').value.trim();
+            const bio = document.getElementById('newCandidateBio').value.trim();
+            const filePicker = document.getElementById('newCandidatePhotoFile');
+
+            if(!name || !pos || !bio) { showToast("يرجى إكمال كافة حقول السيرة والاسم للمرشح."); return; }
+
+            if(filePicker.files && filePicker.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    db.ref('election_candidates').push().set({
+                        name: name, pos: pos, bio: bio, votes: 0, photoFile: e.target.result
+                    }).then(() => {
+                        clearElectionInputs();
+                        showToast("تم قيد وإدراج المرشح مع الصورة بنجاح.");
+                    });
+                };
+                reader.readAsDataURL(filePicker.files[0]);
+            } else {
+                db.ref('election_candidates').push().set({
+                    name: name, pos: pos, bio: bio, votes: 0, photoFile: ""
+                }).then(() => {
+                    clearElectionInputs();
+                    showToast("تم إدراج المرشح بنجاح بدون صورة.");
+                });
+            }
+        }
+
+        function clearElectionInputs() {
+            document.getElementById('newCandidateName').value = "";
+            document.getElementById('newCandidatePos').value = "";
+            document.getElementById('newCandidateBio').value = "";
+            document.getElementById('newCandidatePhotoFile').value = "";
+        }
+
+        function controlVotingState(stateStr) {
+            db.ref('election_status/state').set(stateStr).then(() => {
+                showToast(stateStr === 'open' ? "🔓 تم فتح صناديق الاقتراع لعامة الأعضاء." : "🔒 تم إغلاق صناديق الاقتراع بنجاح.");
+            });
+        }
+
+        function finishElectionsAndDispatch() {
+            let reportText = "📊 تقرير الفرز النهائي الشامل والبيانات الانتخابية الصادرة:\n\n";
+            let topCandidate = null;
+            let maxVotes = -1;
+
+            for(let key in candidatesList) {
+                let c = candidatesList[key];
+                let vCount = c.votes || 0;
+                reportText += `- المرشح: ${c.name} | المقعد: ${c.pos} | الأصوات المكتسبة: ${vCount}\n`;
+                if(vCount > maxVotes) {
+                    maxVotes = vCount;
+                    topCandidate = c;
+                }
+            }
+
+            if(topCandidate) {
+                reportText += `\n🏆 الفائز الأول بالانتخابات: [ ${topCandidate.name} ] بمقعد: (${topCandidate.pos})`;
+            }
+
+            db.ref('intel_dispatched_elections').set({ reportText: reportText, dispatchedAt: new Date().toLocaleString() });
+
+            db.ref('election_status').set({ state: "pending_approval", winnerName: topCandidate ? topCandidate.name : "لم يحدد" }).then(() => {
+                showToast("🏁 تم إنهاء الانتخابات وتوجيه البيانات للاستخبارات وإرسال الفائز لرئيس القضاء للمصادقة.");
+            });
+        }
+
+        function approveElectionRegistryByJudge(isApproved) {
+            if(isApproved) {
+                db.ref('news_feed').push().set({
+                    title: "🗳️ بيان مصادقة ختامي صادر عن مجلس القضاء الأعلى",
+                    content: `بأمر سيادة رئيس مجلس القضاء الأعلى بارق محمد الثابتي، تمت المصادقة الرسمية والنهائية على نتائج الاقتراع العام واعتماد الفائزين رسمياً بمديريات الحزب كافة بناءً على التقارير المرفوعة.`,
+                    date: "اعتماد مبرم"
+                }).then(() => {
+                    db.ref('election_status').set({ state: "closed" });
+                    db.ref('election_candidates').remove();
+                    showToast("تمت المصادقة وبث البيان للعامة.");
+                });
+            } else {
+                db.ref('election_status').set({ state: "open" }).then(() => {
+                    showToast("تم نقض السجلات وإعادة فتح باب الاقتراع.");
+                });
+            }
+        }
+
+        function renderElectionsFeed() {
+            const optBox = document.getElementById('voteOptionsBox'); optBox.innerHTML = "";
+            const resBox = document.getElementById('voteResultsBox'); resBox.innerHTML = "";
+            let isElectionOfficer = loggedInUser && String(loggedInUser.id).trim() === electionOfficerKey;
+            
+            if (electionStatus.state !== "open") {
+                optBox.innerHTML = "<div style='opacity:0.6; font-size:12px;'>صناديق الاقتراع مغلقة حالياً وبانتظار المصادقة أو التحديث السيادي.</div>";
+            }
+
+            for(let key in candidatesList) {
+                let c = candidatesList[key];
+                let cImg = c.photoFile ? `<img src="${c.photoFile}" style="width:45px; height:55px; border-radius:4px; object-fit:cover; border:1px solid var(--primary-gold);">` : `<div style="width:45px; height:55px; background:#000; border:1px solid #333; border-radius:4px;"></div>`;
+                
+                if (electionStatus.state === "open") {
+                    let div = document.createElement('div');
+                    div.style = "background:rgba(255,255,255,0.03); padding:10px; border-radius:6px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;";
+                    
+                    let delCandidateBtn = isElectionOfficer ? `<span style="color:var(--danger-red); cursor:pointer; font-weight:bold; margin-right:10px;" onclick="db.ref('election_candidates/${key}').remove()">[استبعاد]</span>` : "";
+
+                    div.innerHTML = `<div style="display:flex; gap:10px; align-items:center;">
+                                        ${cImg}
+                                        <div><strong>${c.name}</strong> ${delCandidateBtn}<br><span style='font-size:11px; color:var(--primary-gold);'>المقعد: ${c.pos}</span><br><span style="font-size:10px; color:#bbb;">السيرة: ${c.bio || '-'}</span></div>
+                                     </div>
+                                     <button class="btn-action" style="width:70px; padding:6px; font-size:11px;" onclick="submitVoteToCandidateCloud('${key}')">تصويت</button>`;
+                    optBox.appendChild(div);
+                }
+
+                let rDiv = document.createElement('div');
+                rDiv.style = "background:rgba(255,255,255,0.02); padding:8px; border-radius:6px; margin-bottom:6px; font-size:12px;";
+                rDiv.innerHTML = `<div><strong>${c.name}</strong> - المقعد المستهدف: (${c.pos})</div>
+                                  <div style='color:var(--success-green); font-weight:bold;'>عدد الأصوات المكتسبة سحابياً: ${c.votes || 0} صوت</div>`;
+                resBox.appendChild(rDiv);
+            }
+        }
+
+        function submitVoteToCandidateCloud(cKey) {
+            db.ref(`election_candidates/${cKey}/votes`).transaction(current => (current || 0) + 1).then(() => {
+                showToast("تم تسجيل صوتك السيادي بصندوق الاقتراع الموثق.");
+            });
+        }
+
+        function renderJudgeElectionReportBox() {
+            const box = document.getElementById('judgeElectionReportBox'); if(!box) return;
+            box.innerHTML = "<strong>📊 تقرير فرز الأصوات النهائي المرفوع لسيادتكم:</strong><br><br>";
+            for(let key in candidatesList) {
+                box.innerHTML += `- المرشح: ${candidatesList[key].name} | المقعد: ${candidatesList[key].pos} | الأصوات: <span style='color:var(--primary-gold); font-weight:bold;'>${candidatesList[key].votes || 0}</span><br>`;
+            }
+            if(electionStatus.winnerName) {
+                box.innerHTML += `<br><span style="color:var(--primary-gold); font-weight:bold;">🏆 الاسم المرفوع للمصادقة القضائية: ${electionStatus.winnerName}</span>`;
+            }
+        }
+
+        function generateOfficialDocument() {
+            const txt = document.getElementById('docContentInput').value.trim();
+            if(!txt) { showToast("يرجى كتابة نص الكتاب أولاً."); return; }
+
+            const serialNum = "F-" + Math.floor(100000 + Math.random() * 900000);
+            const liveDate = new Date().toLocaleDateString('ar-EG');
+
+            document.getElementById('docLiveDate').innerText = liveDate;
+            document.getElementById('docLiveSerial').innerText = serialNum;
+            document.getElementById('docLiveBody').innerText = txt;
+            document.getElementById('docLiveStampSigner').innerText = loggedInUser.name;
+
+            document.getElementById('compiledDocPreview').style.display = "block";
+
+            db.ref('news_feed').push().set({
+                title: `📜 كتاب رسمي صادر برقم صادرات (${serialNum})`,
+                content: `جهة الإصدار: [${loggedInUser.name} - ${loggedInUser.pos}]\n\nمضمون الكتاب:\n${txt}\n\n------------------------\nنسخة منه إلى الدوائر المعنية / مصادق بختم حزب الفوارس الإلكتروني.`,
+                date: liveDate
+            }).then(() => {
+                showToast("✅ تم اعتماد وتثبيت الكتاب الرسمي ونشره تلقائياً بصفحة المستجدات.");
+            });
+        }
+
+        function downloadOfficialDocImage() {
+            showToast("جاري تصدير ومزامنة المستند الرسمي...");
+            html2canvas(document.getElementById('officialDocPrintArea'), { scale: 2 }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = `كتاب_رسمي_حزب_الفوارس.png`; link.href = canvas.toDataURL('image/png'); link.click();
+            });
+        }
+
+        function downloadIdentityCards() {
+            showToast("جاري معالجة وتصدير الهوية بجودة سيادية...");
+            html2canvas(document.getElementById('frontCard'), { scale: 3, useCORS: true }).then(canvasF => {
+                let link = document.createElement('a');
+                link.download = `هوية_الفوارس_وجه.png`; link.href = canvasF.toDataURL('image/png'); link.click();
+            });
+            setTimeout(() => {
+                html2canvas(document.getElementById('backCard'), { scale: 3, useCORS: true }).then(canvasB => {
+                    let link = document.createElement('a');
+                    link.download = `هوية_الفوارس_ظهر.png`; link.href = canvasB.toDataURL('image/png'); link.click();
+                });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2019 @@
+cat > /mnt/user-data/outputs/alfuars_v2.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>بوابة الفوارس الرقمية — المنظومة السيادية v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --gold: #c5a059;
+  --gold2: #e8c87a;
+  --gold-glow: rgba(197,160,89,0.35);
+  --dark: #060a10;
+  --darker: #040709;
+  --panel: rgba(12,19,30,0.97);
+  --panel2: rgba(16,24,38,0.95);
+  --text: #f0f2f5;
+  --text2: #9ba8bb;
+  --red: #e53935;
+  --green: #43a047;
+  --blue: #1565c0;
+  --purple: #8e24aa;
+  --bank: #ffd700;
+  --border: rgba(197,160,89,0.2);
+  --border2: rgba(197,160,89,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Tajawal',sans-serif;
+  background:var(--darker);
+  color:var(--text);
+  font-size:14px;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ─── CANVAS BACKGROUND ─── */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(10,16,26,0.96);border:1px solid var(--gold);
+  padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5),0 0 15px var(--gold-glow);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:9999;
+  pointer-events:none;text-align:center;max-width:90vw;
+  backdrop-filter:blur(10px);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ─── LOCKOUT ─── */
+.lockout{
+  position:fixed;inset:0;background:rgba(4,7,9,0.97);z-index:9998;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.lockout-box{
+  background:var(--panel);border:2px solid var(--red);border-radius:20px;
+  padding:30px 24px;max-width:440px;width:100%;text-align:center;
+  box-shadow:0 0 40px rgba(229,57,53,0.25),0 20px 60px rgba(0,0,0,0.6);
+  animation:lockPulse 2s infinite;
+}
+@keyframes lockPulse{0%,100%{box-shadow:0 0 40px rgba(229,57,53,0.25)}50%{box-shadow:0 0 60px rgba(229,57,53,0.45)}}
+
+/* ─── LOGIN ─── */
+.login-screen{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:20px;z-index:9000;
+}
+.login-box{
+  background:var(--panel);border:1px solid var(--gold);border-radius:24px;
+  padding:40px 28px;width:100%;max-width:400px;text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 40px var(--gold-glow);
+  backdrop-filter:blur(20px);
+  animation:floatIn .8s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes floatIn{from{opacity:0;transform:translateY(40px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.login-shield{
+  width:90px;height:90px;margin:0 auto 20px;border-radius:50%;
+  background:radial-gradient(circle,rgba(197,160,89,0.15),transparent);
+  border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 30px var(--gold-glow),inset 0 0 20px rgba(197,160,89,0.1);
+  animation:shieldRotate 8s linear infinite;
+}
+@keyframes shieldRotate{0%{box-shadow:0 0 30px var(--gold-glow),inset 0 0 20px rgba(197,160,89,0.1)}50%{box-shadow:0 0 50px rgba(197,160,89,0.5),inset 0 0 30px rgba(197,160,89,0.2)}100%{box-shadow:0 0 30px var(--gold-glow),inset 0 0 20px rgba(197,160,89,0.1)}}
+
+.login-title{color:var(--gold);font-size:26px;font-weight:900;margin-bottom:4px;letter-spacing:1px;}
+.login-sub{color:var(--text2);font-size:13px;margin-bottom:28px;}
+
+/* ─── APP LAYOUT ─── */
+.app{display:flex;flex-direction:column;height:100%;position:relative;z-index:1;}
+
+/* ─── NAVBAR ─── */
+.navbar{
+  background:rgba(6,10,16,0.98);border-bottom:1px solid var(--border);
+  padding:8px 12px;display:flex;flex-direction:column;gap:6px;
+  position:relative;z-index:100;flex-shrink:0;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+@media(min-width:768px){.navbar{flex-direction:row;align-items:center;padding:10px 20px;}}
+.nav-brand{display:flex;align-items:center;gap:8px;justify-content:center;flex-shrink:0;}
+.nav-brand h2{color:var(--gold);font-size:16px;font-weight:800;white-space:nowrap;}
+.nav-scroll{
+  display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;
+  padding-bottom:2px;
+}
+.nav-scroll::-webkit-scrollbar{display:none;}
+.ntab{
+  background:none;border:1px solid transparent;color:var(--text2);
+  padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;
+  border-radius:8px;white-space:nowrap;font-family:inherit;
+  transition:all .2s;flex-shrink:0;
+}
+.ntab:hover{color:var(--text);border-color:var(--border);}
+.ntab.active{color:var(--gold);background:rgba(197,160,89,0.12);border-color:var(--gold);}
+.ntab.special-bank{color:var(--bank);background:rgba(255,215,0,0.08)!important;border-color:rgba(255,215,0,0.3)!important;}
+.ntab.special-intel{color:var(--red);background:rgba(229,57,53,0.08)!important;border-color:rgba(229,57,53,0.3)!important;}
+.ntab.special-media{color:#00bcd4;background:rgba(0,188,212,0.08)!important;border-color:rgba(0,188,212,0.3)!important;}
+.user-badge{
+  background:rgba(197,160,89,0.1);border:1px solid var(--border);
+  padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
+  white-space:nowrap;align-self:center;flex-shrink:0;color:var(--gold);
+}
+
+/* ─── MAIN CONTAINER ─── */
+.main{flex:1;overflow-y:auto;padding:14px;position:relative;}
+.main.chat-mode{padding:0;overflow:hidden;}
+.page{display:none;}
+.page.active{display:block;}
+.page.chat-active{display:flex;flex-direction:column;height:100%;}
+
+/* ─── FLOATING WALLET ─── */
+.wallet-btn{
+  position:fixed;bottom:18px;right:18px;z-index:500;
+  background:linear-gradient(135deg,var(--panel),rgba(22,34,52,0.98));
+  border:2px solid var(--gold);border-radius:50%;width:52px;height:52px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4),0 0 15px var(--gold-glow);
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.wallet-btn.open{border-radius:14px;width:180px;padding:0 14px;justify-content:space-between;}
+.wallet-btn .wt{display:none;font-size:12px;font-weight:800;color:var(--bank);}
+.wallet-btn.open .wt{display:block;}
+
+/* ─── PANELS ─── */
+.panel{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:16px;padding:15px;margin-bottom:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.3);position:relative;
+}
+.panel h3{
+  color:var(--gold);font-size:15px;font-weight:800;
+  margin-bottom:12px;padding-bottom:10px;
+  border-bottom:1px solid var(--border2);
+}
+.panel-intel{border-color:rgba(229,57,53,0.35);background:rgba(15,5,5,0.97);}
+.panel-bank{border-color:rgba(255,215,0,0.35);background:rgba(12,15,5,0.97);}
+.panel-court{border-color:rgba(21,101,192,0.4);}
+.panel-media{border-color:rgba(0,188,212,0.35);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(min-width:768px){.dash{display:grid;grid-template-columns:1fr 1fr;gap:14px;}}
+
+/* ─── FORM ─── */
+.fc{
+  width:100%;padding:11px 14px;background:rgba(0,0,0,0.45);
+  border:1px solid rgba(197,160,89,0.22);border-radius:10px;
+  color:var(--text);font-size:13px;font-family:inherit;
+  margin-bottom:10px;outline:none;transition:border-color .2s;
+}
+.fc:focus{border-color:var(--gold);}
+.fc::placeholder{color:var(--text2);}
+select.fc option{background:#0a1018;color:var(--text);}
+textarea.fc{resize:vertical;min-height:70px;}
+
+/* ─── BUTTONS ─── */
+.btn{
+  width:100%;padding:11px 14px;border:none;border-radius:10px;
+  font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;background:rgba(255,255,255,0);
+  transition:background .2s;
+}
+.btn:hover::after{background:rgba(255,255,255,0.07);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#9a7836);color:#05080c;}
+.btn-green{background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;}
+.btn-red{background:linear-gradient(135deg,#c62828,#7f0000);color:#fff;}
+.btn-blue{background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;}
+.btn-bank{background:linear-gradient(135deg,var(--bank),#b8960a);color:#000;}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto;border-radius:8px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-row .btn{flex:1;min-width:100px;}
+.mb0{margin-bottom:0;}
+
+/* ─── NEWS FEED ─── */
+.news-card{
+  background:rgba(255,255,255,0.025);border-right:3px solid var(--gold);
+  padding:13px;border-radius:8px;margin-bottom:10px;position:relative;
+  transition:background .2s;
+}
+.news-card:hover{background:rgba(255,255,255,0.04);}
+.news-title{font-weight:800;font-size:14px;margin-bottom:5px;}
+.news-body{font-size:13px;line-height:1.6;color:#d0d8e4;white-space:pre-wrap;}
+.news-date{font-size:10px;color:var(--text2);position:absolute;top:10px;left:10px;}
+.news-img{max-width:100%;border-radius:8px;margin-top:8px;border:1px solid var(--border);}
+.del-btn{
+  position:absolute;top:8px;left:8px;background:rgba(229,57,53,0.12);
+  border:1px solid var(--red);color:var(--red);padding:2px 8px;
+  border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;
+}
+
+/* ─── CHAT ─── */
+.chat-wrap{display:flex;flex-direction:column;height:100%;background:rgba(4,8,14,0.98);}
+.chat-bar{
+  background:rgba(8,13,22,0.98);border-bottom:1px solid var(--border2);
+  padding:8px 12px;display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;cursor:pointer;flex-shrink:0;
+}
+.online-list{
+  background:rgba(8,13,22,0.95);padding:8px;display:none;
+  flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border2);
+}
+.otag{
+  background:rgba(67,160,71,0.1);border:1px solid var(--green);
+  color:var(--text);font-size:11px;padding:3px 9px;border-radius:12px;
+  display:flex;align-items:center;gap:4px;
+}
+.otag::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;}
+.chat-msgs{flex:1;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+.bubble{
+  max-width:82%;padding:10px 13px;border-radius:14px;
+  font-size:13px;line-height:1.5;position:relative;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+}
+.me{background:rgba(30,44,64,0.9);border-right:3px solid var(--gold);align-self:flex-start;border-top-right-radius:2px;}
+.other{background:rgba(14,22,34,0.9);border-right:3px solid #00bcd4;align-self:flex-end;border-top-left-radius:2px;}
+.b-sender{font-size:11px;font-weight:800;color:var(--gold);margin-bottom:3px;}
+.other .b-sender{color:#00bcd4;}
+.b-meta{font-size:10px;opacity:0.4;margin-top:4px;}
+.chat-inp{
+  display:flex;padding:10px;gap:8px;background:rgba(0,0,0,0.3);
+  border-top:1px solid var(--border2);flex-shrink:0;
+}
+.chat-inp .fc{margin-bottom:0;flex:1;}
+.chat-inp .btn{width:70px;}
+
+/* ─── IDENTITY CARD ─── */
+.id-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;}
+
+.id-card{
+  width:100%;max-width:420px;
+  background:linear-gradient(135deg,#060c16 0%,#0d1a2b 60%,#060c16 100%);
+  border:1px solid var(--gold);border-radius:16px;
+  position:relative;overflow:hidden;padding:16px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.6),0 0 20px var(--gold-glow);
+  aspect-ratio:1.586/1;
+}
+.id-card::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(197,160,89,0.015) 20px,rgba(197,160,89,0.015) 40px);
+  pointer-events:none;
+}
+.id-card::after{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(ellipse at 30% 30%,rgba(197,160,89,0.07),transparent 60%);
+  pointer-events:none;
+}
+
+.id-stars{display:flex;gap:3px;margin-bottom:2px;}
+.id-star{color:var(--gold);font-size:11px;}
+.id-star.empty{color:rgba(197,160,89,0.2);}
+
+.id-hdr{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  border-bottom:1px solid rgba(197,160,89,0.25);padding-bottom:6px;margin-bottom:8px;
+  position:relative;z-index:1;
+}
+.id-hdr-title{font-size:11px;font-weight:800;color:var(--gold);line-height:1.4;}
+.id-hdr-logo{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(197,160,89,0.1);
+}
+
+.id-body{display:flex;gap:10px;height:calc(100% - 65px);position:relative;z-index:1;}
+.id-info{flex:1;display:flex;flex-direction:column;gap:4px;justify-content:center;}
+.id-field{display:flex;border-bottom:1px solid rgba(197,160,89,0.07);padding-bottom:3px;}
+.id-lbl{width:38%;font-size:9px;color:var(--gold);font-weight:700;}
+.id-val{flex:1;font-size:11px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.id-photo-col{
+  width:70px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;
+}
+.photo-box{
+  width:64px;height:80px;border:1px solid var(--gold);border-radius:6px;
+  background:#000;overflow:hidden;
+}
+.photo-box img{width:100%;height:100%;object-fit:cover;}
+
+.id-footer{
+  position:absolute;bottom:8px;left:14px;right:14px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:9px;color:rgba(197,160,89,0.6);z-index:1;
+}
+.id-serial{font-family:monospace;letter-spacing:1px;}
+
+/* BACK CARD */
+.id-back{justify-content:flex-start;}
+.qr-row{display:flex;gap:12px;align-items:center;margin-bottom:10px;position:relative;z-index:1;}
+.qr-box{
+  width:65px;height:65px;background:#fff;padding:3px;
+  border-radius:6px;flex-shrink:0;
+}
+.qr-box img{width:100%;height:100%;}
+.id-motto{
+  font-size:11px;line-height:1.6;color:var(--text2);
+  border-top:1px solid var(--border2);padding-top:8px;
+  margin-top:auto;position:relative;z-index:1;
+}
+.rank-badge{
+  background:linear-gradient(135deg,rgba(197,160,89,0.2),rgba(197,160,89,0.05));
+  border:1px solid var(--gold);border-radius:6px;
+  padding:3px 8px;font-size:10px;font-weight:800;color:var(--gold);
+  display:inline-flex;align-items:center;gap:4px;
+}
+
+/* ─── COURT ─── */
+.court-item{
+  background:rgba(21,101,192,0.04);border:1px solid rgba(21,101,192,0.25);
+  border-right:4px solid var(--blue);border-radius:10px;padding:14px;
+  margin-bottom:12px;position:relative;
+}
+.court-status{
+  display:inline-block;padding:3px 10px;border-radius:12px;
+  font-size:11px;font-weight:700;margin-top:4px;
+}
+.st-pending{background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.3);}
+.st-acquit{background:rgba(67,160,71,0.15);color:var(--green);border:1px solid rgba(67,160,71,0.3);}
+.st-convict{background:rgba(229,57,53,0.15);color:var(--red);border:1px solid rgba(229,57,53,0.3);}
+.st-evidence{background:rgba(156,39,176,0.15);color:#ce93d8;border:1px solid rgba(156,39,176,0.3);}
+.judge-actions{
+  background:rgba(0,0,0,0.4);padding:12px;border-radius:10px;
+  border:1px solid rgba(197,160,89,0.15);margin-top:10px;
+}
+
+/* ─── MEMBERS SHOWCASE ─── */
+.members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+.member-card{
+  background:var(--panel2);border:1px solid var(--border);border-radius:14px;
+  padding:14px;text-align:center;transition:all .25s;cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.member-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.4),0 0 15px var(--gold-glow);}
+.member-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(197,160,89,0.06),transparent 60%);
+  pointer-events:none;
+}
+.mc-photo{
+  width:64px;height:64px;border-radius:50%;border:2px solid var(--gold);
+  object-fit:cover;margin:0 auto 10px;display:block;
+  background:#000;
+}
+.mc-name{font-weight:800;font-size:14px;margin-bottom:3px;color:var(--text);}
+.mc-pos{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.mc-stars{display:flex;gap:2px;justify-content:center;margin-bottom:6px;}
+.mc-desc{font-size:11px;color:var(--text2);line-height:1.5;display:none;}
+.member-card.expanded .mc-desc{display:block;}
+.member-card.expanded{grid-column:span 2;}
+
+/* ─── MARKET ─── */
+.market-card{
+  background:rgba(255,255,255,0.025);border:1px solid var(--border);
+  border-radius:12px;padding:13px;margin-bottom:10px;
+  display:flex;gap:12px;align-items:center;
+}
+.market-img{
+  width:55px;height:55px;border-radius:8px;object-fit:cover;
+  border:1px solid var(--gold);flex-shrink:0;background:#000;
+}
+.market-info{flex:1;}
+.market-title{font-weight:700;font-size:14px;margin-bottom:3px;}
+.market-price{color:var(--bank);font-weight:800;font-size:13px;}
+.market-seller{font-size:11px;color:var(--text2);}
+
+/* ─── OFFICIAL DOC ─── */
+.official-doc{
+  background:#fff;color:#111;padding:35px 40px;
+  border:2px solid var(--gold);margin-top:14px;
+  font-family:'Tajawal',serif;position:relative;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+}
+.doc-hdr{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;border-bottom:2px solid #c5a059;padding-bottom:15px;margin-bottom:25px;gap:10px;}
+.doc-right{text-align:right;font-size:16px;font-weight:800;line-height:1.4;}
+.doc-left{text-align:left;font-size:14px;font-weight:700;line-height:1.6;}
+.doc-center{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.doc-body-txt{min-height:200px;font-size:17px;line-height:1.9;white-space:pre-wrap;text-align:justify;color:#111;}
+.doc-footer{border-top:1px dashed #ccc;margin-top:35px;padding-top:15px;display:flex;justify-content:space-between;align-items:flex-end;}
+.doc-stamp{
+  border:3px double #c5a059;padding:10px 18px;border-radius:50%;
+  color:#c5a059;font-weight:800;font-size:13px;text-align:center;
+  background:rgba(197,160,89,0.03);
+}
+.doc-cc{font-size:13px;color:#444;font-weight:700;line-height:1.7;}
+
+/* ─── BANK TABLE ─── */
+.btable{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;}
+.btable th{background:rgba(197,160,89,0.15);color:var(--gold);padding:8px;border:1px solid rgba(197,160,89,0.25);text-align:center;}
+.btable td{padding:8px;border:1px solid var(--border2);text-align:center;background:rgba(0,0,0,0.15);}
+.btable-wrap{overflow-x:auto;}
+
+/* ─── DEPT ITEM ─── */
+.dept-item{
+  background:rgba(255,255,255,0.02);border-right:3px solid var(--gold);
+  padding:13px;border-radius:8px;margin-bottom:10px;
+}
+
+/* ─── TRANSFER MODAL ─── */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:600;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(4px);
+}
+.modal-box{
+  background:var(--panel);border:1px solid var(--gold);border-radius:18px;
+  padding:24px;width:100%;max-width:380px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  animation:floatIn .3s ease;
+}
+.modal-title{font-size:16px;font-weight:800;color:var(--gold);margin-bottom:16px;}
+
+/* ─── LABEL ─── */
+.lbl{font-size:11px;color:var(--text2);margin-bottom:4px;display:block;}
+
+/* ─── STAR RANKS ─── */
+.stars-1::after{content:'★';color:var(--gold);}
+.stars-2::after{content:'★★';color:var(--gold);}
+.stars-3::after{content:'★★★';color:var(--gold);}
+.stars-4::after{content:'★★★★';color:var(--gold);}
+.stars-5::after{content:'★★★★★';color:var(--gold);}
+
+/* ─── SECTION LABEL ─── */
+.section-hdr{
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+  padding-bottom:10px;border-bottom:1px solid var(--border2);
+}
+.section-hdr-icon{
+  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0;
+}
+
+/* ─── NOTIFICATION DOT ─── */
+.notif-dot{
+  display:inline-block;width:7px;height:7px;background:var(--red);
+  border-radius:50%;margin-right:2px;animation:blink 1.5s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ─── ONLINE PRESENCE ─── */
+.presence-indicator{
+  width:8px;height:8px;background:var(--green);border-radius:50%;
+  animation:blink 2s infinite;display:inline-block;margin-left:4px;
+}
+
+/* ─── MISC ─── */
+.divider{border:none;border-top:1px solid var(--border2);margin:14px 0;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);font-size:13px;}
+.info-key{color:var(--text2);}
+.info-val{font-weight:700;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-gold{background:rgba(197,160,89,0.15);border:1px solid var(--gold);color:var(--gold);}
+.badge-green{background:rgba(67,160,71,0.15);border:1px solid var(--green);color:var(--green);}
+.badge-red{background:rgba(229,57,53,0.15);border:1px solid var(--red);color:var(--red);}
+.badge-blue{background:rgba(21,101,192,0.15);border:1px solid var(--blue);color:#64b5f6;}
+
+/* ─── 3D CARD FLIP ─── */
+.flip-container{perspective:1000px;width:100%;max-width:420px;margin:0 auto;}
+.flip-inner{
+  position:relative;transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.4,0,.2,1);
+  width:100%;
+}
+.flip-inner.flipped{transform:rotateY(180deg);}
+.flip-front,.flip-back{
+  width:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.flip-back{
+  position:absolute;top:0;left:0;
+  transform:rotateY(180deg);
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.2);}
+::-webkit-scrollbar-thumb{background:rgba(197,160,89,0.3);border-radius:3px;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:480px){
+  .grid2,.grid3{grid-template-columns:1fr;}
+  .id-card{aspect-ratio:1.2/1;}
+  .official-doc{padding:20px 15px;}
+  .doc-hdr{grid-template-columns:1fr;text-align:center;}
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeSlideIn .35s ease both;}
+.anim-1{animation-delay:.05s;}
+.anim-2{animation-delay:.1s;}
+.anim-3{animation-delay:.15s;}
+.anim-4{animation-delay:.2s;}
+
+/* ─── INTEL/MEDIA SPECIAL SECTIONS ─── */
+.intel-section{
+  background:rgba(139,0,0,0.06);border:1px solid rgba(229,57,53,0.2);
+  border-radius:12px;padding:14px;margin-bottom:12px;
+}
+.bank-section{
+  background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.15);
+  border-radius:12px;padding:14px;margin-bottom:12px;
+}
+.court-action-btn{
+  flex:1;min-width:90px;padding:8px;font-size:12px;
+  font-weight:700;border:none;border-radius:8px;cursor:pointer;
+  font-family:inherit;transition:all .2s;
+}
+.member-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  padding:4px 10px;border-radius:20px;font-size:12px;margin:3px;
+}
+
+/* ─── 3D PARTICLES ─── */
+.particles-overlay{
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div id="toast" class="toast"></div>
+
+<!-- WALLET -->
+<div class="wallet-btn" id="walletBtn" onclick="toggleWallet()" style="display:none;">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+  <span class="wt" id="walletTxt">0 أكة</span>
+</div>
+
+<!-- TRANSFER MODAL -->
+<div class="modal" id="transferModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">💸 تحويل رصيد لعضو آخر</div>
+    <label class="lbl">اختر المستلم</label>
+    <select id="transferTarget" class="fc"></select>
+    <label class="lbl">المبلغ (أكة)</label>
+    <input type="number" id="transferAmount" class="fc" placeholder="أدخل المبلغ">
+    <label class="lbl">ملاحظة (اختياري)</label>
+    <input type="text" id="transferNote" class="fc" placeholder="سبب التحويل">
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-gold" onclick="executeTransfer()">تأكيد التحويل ✓</button>
+      <button class="btn" style="background:rgba(255,255,255,0.06);color:var(--text);" onclick="document.getElementById('transferModal').style.display='none'">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOCKOUT -->
+<div class="lockout" id="lockout" style="display:none;">
+  <div class="lockout-box">
+    <div style="font-size:48px;margin-bottom:12px;">⛔</div>
+    <h2 style="color:var(--red);margin-bottom:10px;">صلاحيات مجمدة</h2>
+    <p style="color:#ccc;font-size:13px;line-height:1.7;" id="lockoutMsg">تم تجميد حسابك بموجب حكم قضائي.</p>
+    <div style="background:rgba(0,0,0,0.3);padding:14px;border-radius:10px;margin:16px 0;border:1px solid rgba(229,57,53,0.25);">
+      <div style="font-size:12px;color:#aaa;">الغرامة المطلوبة</div>
+      <div id="lockoutFine" style="font-size:24px;color:var(--red);font-weight:900;">0 أكة</div>
+      <div id="lockoutBal" style="font-size:12px;color:var(--bank);margin-top:4px;">رصيدك: 0 أكة</div>
+    </div>
+    <button class="btn btn-green" onclick="payFine()">سداد الغرامة وفتح الحساب ⚖️</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-shield">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="1.8">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="login-title" id="loginMainTitle">بَوَّابَةُ الْفَوَارِسِ</div>
+    <div class="login-sub" id="loginSubTitle">المنظومة السحابية السيادية المركزية v2.0</div>
+    <input type="password" id="loginInput" class="fc" placeholder="● ● ● ● ● ●  الرمز السري" style="text-align:center;font-size:16px;letter-spacing:3px;margin-bottom:14px;">
+    <button class="btn btn-gold" onclick="doLogin()">دخول آمن ← تحقق</button>
+    <div style="font-size:11px;color:var(--text2);margin-top:14px;opacity:0.6;">🔒 جميع الرموز مشفرة ومحمية</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none;">
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <h2 id="navTitle">الفوارس السيادية</h2>
+    </div>
+    <div class="nav-scroll" id="navMenu">
+      <button class="ntab active" onclick="gp('newsPage',this)">📰 المستجدات</button>
+      <button class="ntab" onclick="gp('chatPage',this)">💬 ديوان الحوار</button>
+      <button class="ntab" onclick="gp('identityPage',this)">🪪 الهوية</button>
+      <button class="ntab" onclick="gp('membersPage',this)">👥 كوادر الحزب</button>
+      <button class="ntab" onclick="gp('marketPage',this)">🏪 السوق المالي</button>
+      <button class="ntab" onclick="gp('deptPage',this)">🏛️ الدوائر</button>
+      <button class="ntab" onclick="gp('constitutionPage',this)">📜 الدستور</button>
+      <button class="ntab" onclick="gp('courtPage',this)">⚖️ المحكمة</button>
+      <button class="ntab" onclick="gp('electionsPage',this)">🗳️ الانتخابات</button>
+      <button class="ntab" onclick="gp('docsPage',this)">🖋️ الكتب الرسمية</button>
+      <button class="ntab special-bank" id="bankTab" onclick="gp('bankPage',this)" style="display:none;">🏦 البنك المركزي</button>
+      <button class="ntab special-intel" id="intelTab" onclick="gp('intelPage',this)" style="display:none;">🕵️ الاستخبارات</button>
+      <button class="ntab special-media" id="mediaTab" onclick="gp('mediaPage',this)" style="display:none;">📡 مديرية الإعلام</button>
+      <button class="ntab" id="adminTab" onclick="gp('adminPage',this)" style="display:none;">👑 القيادة العليا</button>
+    </div>
+    <div class="user-badge" id="userBadge">-</div>
+  </nav>
+
+  <div class="main" id="mainBox">
+
+    <!-- NEWS -->
+    <div class="page active" id="newsPage">
+      <div class="panel anim" id="postBox" style="display:none;">
+        <h3>✍️ نشر تحديث جديد</h3>
+        <textarea id="postContent" class="fc" rows="2" placeholder="اكتب تحديثك السيادي هنا..."></textarea>
+        <input type="text" id="postPhoto" class="fc" placeholder="رابط صورة مرفقة (اختياري)">
+        <button class="btn btn-gold" onclick="publishPost()">نشر على العامة 📢</button>
+      </div>
+      <div class="panel anim anim-1">
+        <h3>🗞️ المراسيم والمستجدات</h3>
+        <div id="newsFeed"></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="page" id="chatPage">
+      <div class="chat-wrap">
+        <div class="chat-bar" onclick="toggleOnline()">
+          <span>🟢 <span id="onlineLabel">الكوادر المتواجدة</span></span>
+          <span id="onlineCount">اضغط للاستعراض (0) 🔽</span>
+        </div>
+        <div class="online-list" id="onlineBox"></div>
+        <div class="chat-msgs" id="chatBox"></div>
+        <div class="chat-inp">
+          <input type="text" id="chatInp" class="fc" placeholder="اكتب رسالتك..." autocomplete="off" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="btn btn-gold" onclick="sendMsg()">إرسال</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDENTITY -->
+    <div class="page" id="identityPage">
+      <div class="dash">
+        <div class="panel anim">
+          <h3>🪪 بطاقة العضوية السيادية</h3>
+          <div class="flip-container">
+            <div class="flip-inner" id="flipInner">
+              <!-- FRONT -->
+              <div class="flip-front">
+                <div class="id-card" id="frontCard">
+                  <div class="id-hdr">
+                    <div>
+                      <div class="id-hdr-title" id="idCountry">جمهورية العراق</div>
+                      <div style="font-size:9px;color:var(--text2);" id="idParty">حزب الفوارس — الأمانة العامة</div>
+                      <div class="id-stars" id="idStarsRow">
+                        <span class="id-star">★</span><span class="id-star">★</span><span class="id-star">★</span>
+                        <span class="id-star empty">★</span><span class="id-star empty">★</span>
+                      </div>
+                    </div>
+                    <div class="id-hdr-logo">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="id-body">
+                    <div class="id-info" id="idFields">
+                      <div class="id-field"><div class="id-lbl" id="lbl_name">الاسم</div><div class="id-val" id="f_name">-</div></div>
+                      <div class="id-field"><div class="id-lbl" id="lbl_pos">المنصب</div><div class="id-val" id="f_pos">-</div></div>
+                      <div class="id-field"><div class="id-lbl" id="lbl_birth">المواليد</div><div class="id-val" id="f_birth">-</div></div>
+                      <div class="id-field"><div class="id-lbl" id="lbl_home">النطاق</div><div class="id-val" id="f_home">-</div></div>
+                      <div class="id-field"><div class="id-lbl" id="lbl_dept">الدائرة</div><div class="id-val" id="f_dept">-</div></div>
+                      <div class="id-field"><div class="id-lbl" style="color:var(--bank);">الرصيد</div><div class="id-val" id="f_bal" style="color:var(--bank);font-weight:800;">0 أكة</div></div>
+                    </div>
+                    <div class="id-photo-col">
+                      <div class="photo-box"><img id="f_photo" src="" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23c5a059%22><path d=%22M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z%22/></svg>'"></div>
+                      <div id="f_rank" class="rank-badge" style="font-size:9px;">★ عضو</div>
+                    </div>
+                  </div>
+                  <div class="id-footer">
+                    <span class="id-serial" id="f_serial">●●● مؤمن</span>
+                    <span id="idCardMottoFooter" style="font-size:8px;opacity:0.5;">حزب الفوارس</span>
+                  </div>
+                </div>
+              </div>
+              <!-- BACK -->
+              <div class="flip-back">
+                <div class="id-card id-back" id="backCard">
+                  <div class="id-hdr" style="margin-bottom:10px;">
+                    <div class="id-hdr-title" id="idBackTitle">بطاقة العضوية — الجهة الخلفية</div>
+                    <div class="id-hdr-logo">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M9 9h6M9 12h6M9 15h4"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="qr-row">
+                    <div class="qr-box"><img id="b_qr" src=""></div>
+                    <div style="flex:1;font-size:11px;color:var(--text2);line-height:1.6;" id="backExtraInfo">
+                      <div style="color:var(--gold);font-weight:800;margin-bottom:4px;" id="f_nameBack">-</div>
+                      <div id="f_posBack" style="margin-bottom:3px;">-</div>
+                      <div id="backCustomFields"></div>
+                    </div>
+                  </div>
+                  <div class="id-motto" id="idMotto">انضم لصفوف الأبطال، شيّد المستقبل</div>
+                  <div class="id-footer">
+                    <span style="font-size:9px;">رمز التحقق الرقمي:</span>
+                    <span class="id-serial" id="b_serial" style="font-size:9px;">●●●●●●</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn" style="background:rgba(197,160,89,0.12);color:var(--gold);border:1px solid var(--gold);flex:1;" onclick="document.getElementById('flipInner').classList.toggle('flipped')">🔄 قلب الهوية</button>
+            <button class="btn btn-gold" style="flex:1;" onclick="downloadId()">⬇️ تحميل</button>
+          </div>
+        </div>
+        <div class="panel anim anim-1">
+          <h3>📷 تحديث الصورة الشخصية</h3>
+          <input type="file" id="photoInput" class="fc" accept="image/*" onchange="uploadPhoto(event)">
+          <div style="margin-top:10px;padding:12px;background:rgba(0,0,0,0.3);border-radius:10px;">
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">بياناتك الحالية</div>
+            <div class="info-row"><span class="info-key">الاسم</span><span class="info-val" id="profile_name">-</span></div>
+            <div class="info-row"><span class="info-key">المنصب</span><span class="info-val" id="profile_pos">-</span></div>
+            <div class="info-row"><span class="info-key">المواليد</span><span class="info-val" id="profile_birth">-</span></div>
+            <div class="info-row" style="border:none;"><span class="info-key">الرصيد</span><span class="info-val" id="profile_bal" style="color:var(--bank);">0 أكة</span></div>
+          </div>
+          <button class="btn btn-gold" style="margin-top:10px;" onclick="document.getElementById('transferModal').style.display='flex'">💸 تحويل رصيد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBERS SHOWCASE -->
+    <div class="page" id="membersPage">
+      <div class="panel anim">
+        <h3>👥 كوادر ومناضلو الحزب</h3>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">هوية وصورة وتعريف بكل عضو في منظومة الفوارس السيادية</p>
+        <div class="members-grid" id="membersGrid"></div>
+      </div>
+    </div>
+
+    <!-- MARKET -->
+    <div class="page" id="marketPage">
+      <div class="panel anim">
+        <h3>🏪 السوق الرقمي الموحد</h3>
+        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;margin-bottom:16px;border:1px solid var(--border);">
+          <h4 style="color:var(--gold);margin-bottom:10px;">➕ طرح شيء للبيع</h4>
+          <div class="grid2">
+            <input type="text" id="mTitle" class="fc" placeholder="عنوان السلعة أو المنصب">
+            <input type="number" id="mPrice" class="fc" placeholder="السعر (أكة)">
+          </div>
+          <input type="file" id="mFile" class="fc" accept="image/*" onchange="encodeMarketFile(event)">
+          <input type="hidden" id="mImg">
+          <button class="btn btn-green" onclick="listItem()">طرح في السوق 🚀</button>
+        </div>
+        <h4 style="color:var(--bank);margin-bottom:10px;">📋 المواد المدرجة للبيع</h4>
+        <div id="marketItems"></div>
+      </div>
+    </div>
+
+    <!-- DEPARTMENTS -->
+    <div class="page" id="deptPage">
+      <div class="panel anim" id="deptAdminBox" style="display:none;border-color:rgba(197,160,89,0.4);">
+        <h3>🏗️ إدارة الدوائر — الأمانة العامة (530)</h3>
+        <input type="text" id="deptName" class="fc" placeholder="اسم الدائرة الجديدة">
+        <input type="text" id="deptJob" class="fc" placeholder="نطاقها الوظيفي ومهامها">
+        <button class="btn btn-gold" onclick="createDept()">تأسيس الدائرة ✓</button>
+        <hr class="divider">
+        <h4 style="color:var(--gold);margin-bottom:10px;">إدراج عضو في دائرة</h4>
+        <select id="deptSelector" class="fc"></select>
+        <select id="deptMemberSelector" class="fc"></select>
+        <select id="memberPermission" class="fc">
+          <option value="none">عضو اعتيادي</option>
+          <option value="court_appointment">طلب تعيين في القضاء</option>
+          <option value="intel_appointment">طلب تعيين في الاستخبارات</option>
+        </select>
+        <button class="btn btn-blue" onclick="addToDept()">إصدار أمر تنسيب 📋</button>
+      </div>
+      <div class="panel anim anim-1" id="endorseBox" style="display:none;border-color:rgba(21,101,192,0.35);">
+        <h3>⚖️ مصادقة التعيينات السيادية</h3>
+        <div id="endorseFeed"></div>
+      </div>
+      <div class="panel anim anim-2">
+        <h3>🏛️ الهيكل الإداري والدوائر</h3>
+        <div id="deptFeed"></div>
+      </div>
+    </div>
+
+    <!-- CONSTITUTION -->
+    <div class="page" id="constitutionPage">
+      <div class="panel anim" id="constEditorBox" style="display:none;">
+        <h3>🖋️ محرر الدستور (بارق محمد 392)</h3>
+        <textarea id="constInput" class="fc" rows="6" placeholder="بنود الدستور..."></textarea>
+        <div style="background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;margin-bottom:10px;">
+          <label class="lbl">تفويض كادر لتعديل الدستور</label>
+          <select id="constDelegate" class="fc"></select>
+          <div class="btn-row">
+            <button class="btn btn-blue btn-sm" onclick="grantConstitution(true)">تفعيل التفويض</button>
+            <button class="btn btn-red btn-sm" onclick="grantConstitution(false)">سحب التفويض</button>
+          </div>
+        </div>
+        <button class="btn" style="background:var(--purple);color:#fff;" onclick="saveConstitution()">تثبيت الدستور سحابياً 📜</button>
+      </div>
+      <div class="panel anim anim-1">
+        <h3>📜 الدستور والأحكام الثابتة</h3>
+        <div id="constDisplay" style="white-space:pre-wrap;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;line-height:1.7;font-size:13px;"></div>
+      </div>
+    </div>
+
+    <!-- COURT -->
+    <div class="page" id="courtPage">
+      <div class="panel anim">
+        <h3>⚖️ رفع شكوى — المحكمة العليا</h3>
+        <label class="lbl">العضو المشكو منه</label>
+        <select id="courtAccused" class="fc"></select>
+        <label class="lbl">تفاصيل الشكوى والحيثيات</label>
+        <textarea id="courtDetails" class="fc" rows="3" placeholder="اشرح الشكوى بالتفصيل..."></textarea>
+        <button class="btn btn-blue" onclick="submitCase()">رفع الدعوى رسمياً ⚖️</button>
+      </div>
+      <div class="panel anim anim-1">
+        <h3 id="courtHeading">🏛️ سجل القضايا والبت القضائي</h3>
+        <button id="judgeFilterBtn" class="btn btn-blue" style="display:none;margin-bottom:12px;background:linear-gradient(135deg,#1e3c72,#2a5298);" onclick="toggleJudgeFilter()">📂 الاستعراض القضائي المتكامل</button>
+        <div id="courtFeed"></div>
+      </div>
+    </div>
+
+    <!-- ELECTIONS -->
+    <div class="page" id="electionsPage">
+      <div class="panel anim" id="electionAdminBox" style="display:none;border-color:rgba(67,160,71,0.35);">
+        <h3>🗳️ لوحة إدارة الانتخابات (سجاد محمد 710)</h3>
+        <input type="text" id="candName" class="fc" placeholder="اسم المرشح">
+        <input type="text" id="candPos" class="fc" placeholder="المنصب المستهدف">
+        <textarea id="candBio" class="fc" rows="2" placeholder="السيرة الذاتية للمرشح..."></textarea>
+        <label class="lbl">صورة المرشح</label>
+        <input type="file" id="candPhoto" class="fc" accept="image/*">
+        <div class="btn-row" style="margin-bottom:10px;">
+          <button class="btn btn-green" onclick="addCandidate()">إدراج المرشح ✓</button>
+          <button class="btn btn-blue" onclick="setElection('open')">🔓 فتح التصويت</button>
+          <button class="btn btn-red" onclick="setElection('closed')">🔒 إغلاق التصويت</button>
+        </div>
+        <button class="btn btn-red" onclick="finishElection()">🏁 إعلان النتائج النهائية</button>
+      </div>
+      <div class="panel anim anim-1" id="judgeElecBox" style="display:none;border:2px solid var(--gold);background:rgba(15,15,5,0.97);">
+        <h3>📜 مصادقة نتائج الانتخابات (بارق محمد)</h3>
+        <div id="judgeElecReport" style="background:rgba(0,0,0,0.4);padding:12px;border-radius:8px;font-size:13px;margin-bottom:10px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-green" onclick="approveElection(true)">✍️ مصادقة واعتماد</button>
+          <button class="btn btn-red" onclick="approveElection(false)">❌ نقض النتائج</button>
+        </div>
+      </div>
+      <div class="dash">
+        <div class="panel anim anim-2"><h3>🗳️ صندوق الاقتراع المفتوح</h3><div id="voteBox"></div></div>
+        <div class="panel anim anim-3"><h3>📊 نتائج الفرز المباشر</h3><div id="resultsBox"></div></div>
+      </div>
+    </div>
+
+    <!-- DOCS -->
+    <div class="page" id="docsPage">
+      <div class="panel anim">
+        <h3>🖋️ إصدار كتاب رسمي</h3>
+        <div class="grid2" style="margin-bottom:10px;">
+          <div>
+            <label class="lbl">جهة التوجيه (إلى)</label>
+            <input type="text" id="docTo" class="fc mb0" placeholder="مثال: السيد الأمين العام">
+          </div>
+          <div>
+            <label class="lbl">الموضوع</label>
+            <input type="text" id="docSubject" class="fc mb0" placeholder="موضوع الكتاب">
+          </div>
+        </div>
+        <textarea id="docBody" class="fc" rows="5" placeholder="نص ومضمون الكتاب الرسمي..."></textarea>
+        <label class="lbl">نسخة منه إلى</label>
+        <input type="text" id="docCC" class="fc" placeholder="الجهات المعنية (افصل بفاصلة)">
+        <button class="btn btn-gold" onclick="generateDoc()">إصدار وبث الكتاب الرسمي 📋</button>
+      </div>
+      <div id="docPreview" style="display:none;">
+        <div class="official-doc" id="docPrintArea">
+          <div class="doc-hdr">
+            <div class="doc-right">
+              <div style="font-weight:900;font-size:18px;" id="docPartyName">حزب الفوارس</div>
+              <div style="font-size:12px;letter-spacing:1px;">ALFUARS PARTY</div>
+              <div style="font-size:13px;margin-top:4px;" id="docDeptName">الأمانة العامة</div>
+            </div>
+            <div class="doc-center">
+              <div style="width:60px;height:60px;border:2px solid #c5a059;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(197,160,89,0.05);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c5a059" stroke-width="1.8">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div style="font-size:11px;color:#888;margin-top:4px;text-align:center;">رقم صادرات: <span id="docSerial">-</span></div>
+            </div>
+            <div class="doc-left">
+              <div>التاريخ: <span id="docDate">-</span></div>
+              <div>إلى: <span id="docToDisplay">-</span></div>
+              <div>الموضوع: <span id="docSubDisplay">-</span></div>
+            </div>
+          </div>
+          <div style="font-size:16px;font-weight:800;text-align:center;margin-bottom:18px;color:#333;" id="docSubjectTitle">-</div>
+          <div class="doc-body-txt" id="docBodyDisplay"></div>
+          <div class="doc-footer">
+            <div class="doc-cc" id="docCCDisplay">نسخة منه إلى: -</div>
+            <div class="doc-stamp">ختم الفوارس<br><span style="font-size:11px;font-weight:400;" id="docSigner">-</span></div>
+          </div>
+        </div>
+        <button class="btn btn-green" style="margin-top:10px;" onclick="downloadDoc()">⬇️ تحميل الكتاب الرسمي</button>
+      </div>
+    </div>
+
+    <!-- BANK -->
+    <div class="page" id="bankPage">
+      <div class="panel panel-bank anim">
+        <h3 style="color:var(--bank);">🏦 البنك المركزي — محافظ البنك (638)</h3>
+        <div class="bank-section">
+          <h4 style="color:var(--bank);margin-bottom:10px;">💰 الميزانية العامة</h4>
+          <div class="grid2">
+            <div>
+              <label class="lbl">الميزانية الكلية الحالية</label>
+              <div style="font-size:22px;font-weight:900;color:var(--bank);" id="totalBudget">0 أكة</div>
+            </div>
+            <div>
+              <label class="lbl">تحديث الميزانية</label>
+              <input type="number" id="newBudget" class="fc mb0" placeholder="الميزانية الجديدة">
+            </div>
+          </div>
+          <button class="btn btn-bank" style="margin-top:10px;" onclick="updateBudget()">تثبيت الميزانية 🏛️</button>
+        </div>
+        <div class="bank-section">
+          <h4 style="color:var(--bank);margin-bottom:10px;">⚙️ سياسة الاقتراض</h4>
+          <div class="grid3">
+            <div><label class="lbl">الحد الأقصى (أكة)</label><input type="number" id="maxLoan" class="fc mb0" placeholder="5000"></div>
+            <div><label class="lbl">الفائدة (%)</label><input type="number" id="loanInt" class="fc mb0" placeholder="10"></div>
+            <div><label class="lbl">المدة (دقيقة)</label><input type="number" id="loanDur" class="fc mb0" placeholder="30"></div>
+          </div>
+          <button class="btn btn-bank" style="margin-top:10px;" onclick="saveLoanPolicy()">اعتماد السياسة 📜</button>
+        </div>
+        <div class="bank-section">
+          <h4 style="color:var(--bank);margin-bottom:10px;">💼 إدارة رواتب ومكافآت الأعضاء</h4>
+          <select id="bankMember" class="fc"></select>
+          <div class="grid2">
+            <div><label class="lbl">الراتب (أكة)</label><input type="number" id="salaryAmt" class="fc mb0" placeholder="الراتب"></div>
+            <div><label class="lbl">مكافأة خاصة (أكة)</label><input type="number" id="bonusAmt" class="fc mb0" placeholder="مكافأة"></div>
+          </div>
+          <div class="grid2" style="margin-top:8px;">
+            <div><label class="lbl">غرامة انضباطية (أكة)</label><input type="number" id="fineAmt" class="fc mb0" placeholder="الغرامة"></div>
+          </div>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-green" onclick="setSalary()">تثبيت الراتب 💰</button>
+            <button class="btn btn-bank" onclick="giveBonus()">منح مكافأة 🏅</button>
+            <button class="btn btn-red" onclick="applyFine()">تنفيذ الغرامة ⚠️</button>
+          </div>
+        </div>
+        <div class="bank-section">
+          <h4 style="color:var(--bank);margin-bottom:10px;">📊 جدول الحسابات الموحد</h4>
+          <div class="btable-wrap"><table class="btable"><thead><tr><th>العضو</th><th>المنصب</th><th>الراتب</th><th>الرصيد</th><th>القروض</th></tr></thead><tbody id="bankTable"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEL -->
+    <div class="page" id="intelPage">
+      <div class="panel panel-intel anim">
+        <h3 style="color:var(--red);">🕵️ مديرية الأمن والاستخبارات — حسين علاء (511)</h3>
+        <div class="intel-section">
+          <h4 style="color:var(--red);margin-bottom:10px;">🛠️ إعدادات الواجهة والهوية</h4>
+          <div class="grid2">
+            <input type="text" id="cfg_country" class="fc" placeholder="الدولة (الهوية)">
+            <input type="text" id="cfg_party" class="fc" placeholder="اسم الحزب (الهوية)">
+            <input type="text" id="cfg_navTitle" class="fc" placeholder="عنوان شريط التنقل">
+            <input type="text" id="cfg_motto" class="fc" placeholder="شعار الهوية الخلفية">
+            <input type="text" id="cfg_fieldName" class="fc" placeholder="اسم حقل جديد بالهوية">
+            <input type="text" id="cfg_footerText" class="fc" placeholder="نص تذييل الهوية">
+          </div>
+          <button class="btn btn-blue" onclick="saveSystemConfig()">تطبيق الإعدادات ⚙️</button>
+        </div>
+        <div class="intel-section">
+          <h4 style="color:var(--red);margin-bottom:10px;">👥 إدارة سجل الكوادر</h4>
+          <select id="intelMember" class="fc" onchange="loadMemberData()"></select>
+          <div class="grid2">
+            <input type="text" id="int_name" class="fc" placeholder="الاسم الكامل">
+            <input type="text" id="int_pos" class="fc" placeholder="المنصب">
+            <input type="text" id="int_id" class="fc" placeholder="الرمز السري">
+            <input type="text" id="int_birth" class="fc" placeholder="المواليد">
+            <input type="text" id="int_home" class="fc" placeholder="محل السكن">
+            <input type="text" id="int_dept" class="fc" placeholder="الدائرة">
+            <input type="text" id="int_rank" class="fc" placeholder="الرتبة والنجوم (1-5)">
+            <input type="text" id="int_custom" class="fc" placeholder="قيمة الحقل المضاف">
+          </div>
+          <label class="lbl">صورة العضو</label>
+          <input type="file" id="intelPhoto" class="fc" accept="image/*" onchange="encodeIntelPhoto(event)">
+          <input type="hidden" id="intelPhotoData">
+          <div class="btn-row">
+            <button class="btn btn-green" onclick="updateMember(false)">تعديل البيانات ✏️</button>
+            <button class="btn btn-blue" onclick="updateMember(true)">إضافة عضو جديد ➕</button>
+            <button class="btn btn-red" onclick="deleteMember()">حذف نهائي 🗑️</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn" style="background:rgba(229,57,53,0.15);color:var(--red);border:1px solid rgba(229,57,53,0.3);" onclick="togglePosting(false)">🚫 حظر النشر</button>
+            <button class="btn btn-green" onclick="togglePosting(true)">✅ إلغاء الحظر</button>
+            <button class="btn" style="background:rgba(255,152,0,0.15);color:#ffa726;border:1px solid rgba(255,152,0,0.3);" onclick="toggleArrest(true)">🔒 اعتقال</button>
+            <button class="btn btn-green btn-sm" onclick="toggleArrest(false)">🔓 إفراج</button>
+          </div>
+        </div>
+        <div class="intel-section">
+          <h4 style="color:var(--red);margin-bottom:10px;">📁 الأرشيف السري والتقييمات</h4>
+          <input type="text" id="intelRating" class="fc" placeholder="تقييم أداء العضو السنوي">
+          <textarea id="intelArchive" class="fc" rows="3" placeholder="الملاحظات والقرارات الاستخباراتية..."></textarea>
+          <button class="btn btn-gold" onclick="saveArchive()">تأمين الأرشيف السري 🔐</button>
+        </div>
+        <div class="intel-section">
+          <h4 style="color:var(--green);margin-bottom:10px;">📊 بيانات الاقتراع المرسلة</h4>
+          <div id="intelElecData" style="font-size:12px;white-space:pre-wrap;color:var(--text);">لا توجد بيانات حالياً.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIA PAGE -->
+    <div class="page" id="mediaPage">
+      <div class="panel panel-media anim">
+        <h3 style="color:#00bcd4;">📡 مديرية الإعلام — لوحة التحكم (100)</h3>
+        <div style="background:rgba(0,188,212,0.05);border:1px solid rgba(0,188,212,0.2);border-radius:12px;padding:14px;margin-bottom:12px;">
+          <h4 style="color:#00bcd4;margin-bottom:10px;">ℹ️ نبذة وتعريف بالحزب</h4>
+          <textarea id="partyDesc" class="fc" rows="4" placeholder="اكتب وصفاً تعريفياً بالحزب وتاريخه وأهدافه..."></textarea>
+          <button class="btn" style="background:#00838f;color:#fff;" onclick="savePartyDesc()">حفظ الوصف ✓</button>
+          <div id="partyDescDisplay" style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin-top:10px;font-size:13px;line-height:1.7;display:none;"></div>
+        </div>
+        <div style="background:rgba(0,188,212,0.05);border:1px solid rgba(0,188,212,0.2);border-radius:12px;padding:14px;margin-bottom:12px;">
+          <h4 style="color:#00bcd4;margin-bottom:12px;">🏅 بروفايلات الأعضاء ومناصبهم</h4>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">يمكنك تعديل الوصف والرتبة التي تظهر في بطاقة كل عضو في صفحة الكوادر</p>
+          <select id="mediaEditMember" class="fc" onchange="loadMediaMember()"></select>
+          <input type="text" id="mediaTitle" class="fc" placeholder="اللقب التعريفي للعضو">
+          <textarea id="mediaBio" class="fc" rows="3" placeholder="السيرة والوصف الذي يظهر في بروفايل العضو..."></textarea>
+          <input type="number" id="mediaStars" class="fc" placeholder="عدد النجوم (1-5)">
+          <button class="btn" style="background:#00838f;color:#fff;" onclick="saveMediaMember()">تطبيق على بروفايل العضو ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="adminPage">
+      <div class="panel anim" style="border-color:rgba(197,160,89,0.4);">
+        <h3>👑 القيادة العليا — الأمانة العامة (530)</h3>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">إصدار المراسيم والبيانات السيادية الرسمية</p>
+        <textarea id="decreeContent" class="fc" rows="3" placeholder="نص المرسوم السيادي..."></textarea>
+        <button class="btn btn-gold" onclick="issueDecree()">📢 بث المرسوم رسمياً</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── CONSTANTS ───
+const KEY_ADMIN = "530", KEY_JUDGE = "392", KEY_INTEL = "511";
+const KEY_ELECTION = "710", KEY_BANK = "638", KEY_MEDIA = "100";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDmbzSfFw6kFKfwBq31EmR8gGd6k-fQ3YQ",
+  authDomain: "alfuars-1c163.firebaseapp.com",
+  databaseURL: "https://alfuars-1c163-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "alfuars-1c163",
+  storageBucket: "alfuars-1c163.firebasestorage.app",
+  messagingSenderId: "1088747369516",
+  appId: "1:1088747369516:web:b5786ea521163fb70a4d89"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ─── STATE ───
+let DB = {}, user = null, userKey = "", newsFeed = [], departments = {};
+let courtCases = {}, candidates = {}, electionStatus = {state:"open"};
+let market = {}, loanPolicy = {maxAmount:1000,interest:5,duration:60};
+let budget = 0, judgeFilter = false, constitDelegate = "";
+let partyDescGlobal = "";
+
+// ─── CANVAS BACKGROUND (3D particles) ───
+(function initCanvas() {
+  const c = document.getElementById('bgCanvas');
+  const ctx = c.getContext('2d');
+  let W, H, pts = [];
+  function resize() { W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for(let i = 0; i < 80; i++) pts.push({
+    x: Math.random()*1920, y: Math.random()*1080,
+    vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3,
+    r: Math.random()*1.5+.5, o: Math.random()*.6+.1
+  });
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(197,160,89,${p.o})`;
+      ctx.fill();
+    });
+    pts.forEach((a,i) => pts.slice(i+1).forEach(b => {
+      let d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+        ctx.strokeStyle=`rgba(197,160,89,${.08*(1-d/120)})`;ctx.lineWidth=.5;ctx.stroke();}
+    }));
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── TOAST ───
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.innerHTML = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ─── FIREBASE LISTENERS ───
+db.ref('party_master_data').on('value', snap => {
+  DB = snap.val() || {};
+  if(user) {
+    for(let k in DB) {
+      if(String(DB[k].id).trim() === String(user.id).trim()) {
+        user = DB[k]; userKey = k;
+        syncId(); checkLockout(); updateRoles();
+        break;
+      }
+    }
+  }
+  populateSelects(); renderBankTable();
+});
+db.ref('party_central_bank/loan_policy').on('value', s => { if(s.val()) loanPolicy = s.val(); renderMarket(); });
+db.ref('party_central_bank/total_budget').on('value', s => { budget = s.val()||0; let el=document.getElementById('totalBudget'); if(el) el.innerText=budget+' أكة'; });
+db.ref('party_market_open_offers').on('value', s => { market = s.val()||{}; renderMarket(); });
+db.ref('party_departments_data').on('value', s => { departments = s.val()||{}; if(user){renderDepts();renderEndorse();} });
+db.ref('court_cases_data').on('value', s => { courtCases = s.val()||{}; if(user) renderCourt(); });
+db.ref('constitution_data').on('value', s => { let t=s.val()||'لم تُصَغ مواد الدستور بعد.'; document.getElementById('constDisplay').innerText=t; document.getElementById('constInput').value=t; });
+db.ref('constitution_delegate').on('value', s => { constitDelegate = s.val()||""; updateRoles(); });
+db.ref('news_feed').on('value', s => { newsFeed=[]; s.forEach(c=>{let v=c.val();v.fk=c.key;newsFeed.unshift(v);}); if(user) renderNews(); });
+db.ref('election_candidates').on('value', s => { candidates=s.val()||{}; if(user) renderElections(); });
+db.ref('election_status').on('value', s => { electionStatus=s.val()||{state:'open'}; if(user){renderElections();renderJudgeElecPanel();} });
+db.ref('intel_dispatched_elections').on('value', s => { let el=document.getElementById('intelElecData'); if(el&&s.val()) el.innerText=s.val().reportText||'لا بيانات.'; });
+db.ref('system_layout_config').on('value', s => { applySystemConfig(s.val()); });
+db.ref('party_description').on('value', s => {
+  partyDescGlobal = s.val() || '';
+  let el = document.getElementById('partyDescDisplay');
+  if(el) { el.innerText = partyDescGlobal; el.style.display = partyDescGlobal ? 'block' : 'none'; }
+  if(document.getElementById('partyDesc')) document.getElementById('partyDesc').value = partyDescGlobal;
+});
+db.ref('sovereign_chat_room').on('value', s => { renderChat(s); });
+db.ref('members_presence').on('value', s => { renderOnline(s.val()||{}); });
+
+// ─── LOGIN ───
+function doLogin() {
+  const inp = document.getElementById('loginInput').value.trim();
+  if(!inp) { toast('أدخل الرمز السري.'); return; }
+  let found = null, fk = '';
+  for(let k in DB) { if(String(DB[k].id).trim()===inp){ found=DB[k];fk=k;break; } }
+  if(!found) { toast('❌ الرمز غير مسجل.'); return; }
+  user = found; userKey = fk;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('walletBtn').style.display='flex';
+  // Mark presence
+  db.ref(`members_presence/${userKey}`).set({name:user.name,pos:user.pos,online:true});
+  window.addEventListener('beforeunload',()=>db.ref(`members_presence/${userKey}`).remove());
+  syncId(); checkLockout(); updateRoles();
+  gp('newsPage', document.querySelector('.ntab'));
+  toast(`🎖️ أهلاً وسهلاً، سيادة ${user.name}`);
+}
+document.getElementById('loginInput').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function checkLockout() {
+  if(!user) return;
+  const fine = user.mandatoryFine||0;
+  const ov = document.getElementById('lockout');
+  if(fine>0) {
+    ov.style.display='flex';
+    document.getElementById('lockoutFine').innerText=fine+' أكة';
+    document.getElementById('lockoutBal').innerText=`رصيدك: ${user.balance||0} أكة`;
+  } else { ov.style.display='none'; }
+}
+
+function payFine() {
+  if(!user) return;
+  const fine=user.mandatoryFine||0, bal=user.balance||0;
+  if(bal<fine){toast('❌ رصيدك غير كافٍ.');return;}
+  db.ref(`party_master_data/${userKey}`).update({balance:bal-fine,mandatoryFine:0}).then(()=>{
+    db.ref('party_central_bank/court_judiciary_budget').transaction(c=>(c||0)+fine);
+    toast('✅ تم السداد وإلغاء القيد!');
+  });
+}
+
+// ─── ROLES ───
+function updateRoles() {
+  if(!user) return;
+  const id = String(user.id).trim();
+  const isAdmin=id===KEY_ADMIN, isJudge=id===KEY_JUDGE, isIntel=id===KEY_INTEL;
+  const isElec=id===KEY_ELECTION, isBank=id===KEY_BANK, isMedia=id===KEY_MEDIA;
+  const isDelegate=id===String(constitDelegate).trim();
+
+  let badge = '';
+  if(isAdmin) badge='👑 الأمين العام';
+  else if(isJudge) badge='⚖️ رئيس القضاء الأعلى';
+  else if(isIntel) badge='🕵️ مدير الاستخبارات';
+  else if(isElec) badge='🗳️ مدير الانتخابات';
+  else if(isBank) badge='🏦 محافظ البنك المركزي';
+  else if(isMedia) badge='📡 مدير الإعلام';
+  else badge='🎖️ كادر حزبي';
+  document.getElementById('userBadge').innerText = badge;
+
+  show('bankTab', isBank); show('intelTab', isIntel); show('adminTab', isAdmin); show('mediaTab', isMedia);
+  show('deptAdminBox', isAdmin); show('constEditorBox', isJudge||isDelegate);
+  show('judgeFilterBtn', isJudge); show('electionAdminBox', isElec);
+  show('postBox', user.canPost!==false);
+  show('endorseBox', isJudge||isIntel);
+  if(isIntel) loadIntelDash();
+  if(isBank) loadBankDash();
+  renderJudgeElecPanel();
+}
+function show(id,v){ let el=document.getElementById(id); if(el) el.style.display=v?'block':'none'; }
+
+// ─── PAGE SWITCH ───
+function gp(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');});
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('active'));
+  const pg = document.getElementById(id);
+  pg.classList.add('active');
+  if(btn) btn.classList.add('active');
+  const m = document.getElementById('mainBox');
+  m.classList.toggle('chat-mode', id==='chatPage');
+  updateRoles();
+  // Render members page
+  if(id==='membersPage') renderMembers();
+}
+
+// ─── WALLET ───
+function toggleWallet() {
+  const b=document.getElementById('walletBtn');
+  b.classList.toggle('open');
+  document.getElementById('walletTxt').innerText=`${user?user.balance||0:0} أكة`;
+}
+
+// ─── SYNC ID CARD ───
+function syncId() {
+  if(!user) return;
+  set('f_name', user.name||'-');
+  set('f_pos', user.pos||'-');
+  set('f_birth', user.birth||'-');
+  set('f_home', user.home||'-');
+  set('f_dept', user.dept||'-');
+  set('f_bal', (user.balance||0)+' أكة');
+  set('f_nameBack', user.name||'-');
+  set('f_posBack', user.pos||'-');
+  set('profile_name', user.name||'-');
+  set('profile_pos', user.pos||'-');
+  set('profile_birth', user.birth||'-');
+  set('profile_bal', (user.balance||0)+' أكة');
+  set('walletTxt', `${user.balance||0} أكة`);
+
+  const stars = parseInt(user.rank)||1;
+  let starTxt = '★'.repeat(Math.min(stars,5)) + (stars<5?'☆'.repeat(5-stars):'');
+  set('f_rank', starTxt+' '+(user.rankTitle||'عضو'));
+  let qrData = `${user.name}|${user.pos}|${user.dept||''}|${user.birth||''}`;
+  let qrEl = document.getElementById('b_qr');
+  if(qrEl) qrEl.src=`https://api.qrserver.com/v1/create-qr-code/?size=65x65&data=${encodeURIComponent(qrData)}&bgcolor=ffffff`;
+  let pEl=document.getElementById('f_photo');
+  if(pEl && user.photo) pEl.src=user.photo;
+
+  // Stars on card
+  let starsRow=document.getElementById('idStarsRow');
+  if(starsRow) {
+    starsRow.innerHTML='';
+    for(let i=1;i<=5;i++){
+      let s=document.createElement('span');
+      s.className='id-star'+(i>stars?' empty':'');
+      s.textContent='★';
+      starsRow.appendChild(s);
+    }
+  }
+  if(user.customFieldValue){
+    let el=document.getElementById('f_custom_val');
+    if(!el){
+      let con=document.getElementById('idFields');
+      let d=document.createElement('div');d.className='id-field';
+      d.innerHTML=`<div class="id-lbl" id="lbl_custom">-</div><div class="id-val" id="f_custom_val">${user.customFieldValue}</div>`;
+      con.appendChild(d);
+    } else el.innerText=user.customFieldValue;
+  }
+}
+function set(id,v){let el=document.getElementById(id);if(el)el.innerText=v;}
+
+// ─── NEWS ───
+function renderNews() {
+  const c=document.getElementById('newsFeed'); c.innerHTML='';
+  let canDel=user&&(String(user.id).trim()===KEY_ADMIN||String(user.id).trim()===KEY_INTEL);
+  newsFeed.forEach(item=>{
+    const d=document.createElement('div'); d.className='news-card anim';
+    let img=item.photo?`<br><img src="${item.photo}" class="news-img">`:'';
+    let del=canDel?`<button class="del-btn" onclick="db.ref('news_feed/${item.fk}').remove()">حذف ✕</button>`:'';
+    d.innerHTML=`${del}<div class="news-title">${item.title}</div><span class="news-date">${item.date||''}</span><div class="news-body">${item.content||''}</div>${img}`;
+    c.appendChild(d);
+  });
+}
+function publishPost() {
+  const text=document.getElementById('postContent').value.trim();
+  const photo=document.getElementById('postPhoto').value.trim();
+  if(!text)return;
+  db.ref('news_feed').push().set({
+    title:`✍️ ${user.name} (${user.pos})`,
+    content:text, photo:photo,
+    date:new Date().toLocaleDateString('ar-EG')
+  }).then(()=>{
+    document.getElementById('postContent').value='';
+    document.getElementById('postPhoto').value='';
+    toast('✅ تم النشر!');
+  });
+}
+
+// ─── CHAT ───
+function renderChat(snap) {
+  const box=document.getElementById('chatBox'); box.innerHTML='';
+  let canDel=user&&(String(user.id).trim()===KEY_ADMIN||String(user.id).trim()===KEY_INTEL);
+  snap.forEach(child=>{
+    const m=child.val(), k=child.key;
+    const isMe=user&&String(m.senderId).trim()===String(user.id).trim();
+    const b=document.createElement('div');
+    b.className='bubble '+(isMe?'me':'other');
+    let del=canDel?`<button onclick="db.ref('sovereign_chat_room/${k}').remove()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;position:absolute;top:6px;right:6px;font-family:inherit;">✕</button>`:'';
+    b.style.position='relative';
+    b.innerHTML=`${del}<div class="b-sender">${m.senderName} (${m.senderPos})</div><div>${m.text||''}</div><div class="b-meta">${m.time||''}</div>`;
+    box.appendChild(b);
+  });
+  box.scrollTop=box.scrollHeight;
+}
+function sendMsg() {
+  const inp=document.getElementById('chatInp');
+  const text=inp.value.trim(); if(!text)return;
+  if(user.canPost===false){toast('🚫 صلاحياتك مجمدة.');return;}
+  db.ref('sovereign_chat_room').push().set({
+    senderId:user.id,senderName:user.name,senderPos:user.pos,
+    text:text, time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})
+  }).then(()=>inp.value='');
+}
+function toggleOnline() {
+  const b=document.getElementById('onlineBox');
+  b.style.display=b.style.display==='flex'?'none':'flex';
+}
+function renderOnline(data) {
+  const box=document.getElementById('onlineBox'); box.innerHTML='';
+  let count=0;
+  for(let k in data) {
+    const m=data[k];
+    const t=document.createElement('div'); t.className='otag';
+    t.innerText=`${m.name} (${m.pos})`;
+    box.appendChild(t); count++;
+  }
+  set('onlineCount',`(${count}) 🔽`);
+}
+
+// ─── MEMBERS SHOWCASE ───
+function renderMembers() {
+  const g=document.getElementById('membersGrid'); g.innerHTML='';
+  for(let k in DB) {
+    const m=DB[k];
+    const stars=parseInt(m.rank)||1;
+    let starHtml='';
+    for(let i=1;i<=5;i++) starHtml+=`<span class="id-star${i>stars?' empty':''}" style="font-size:13px;">★</span>`;
+    const card=document.createElement('div'); card.className='member-card';
+    const photoSrc = m.photo || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23c5a059'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>`;
+    card.innerHTML=`
+      <img class="mc-photo" src="${photoSrc}" onerror="this.src=''">
+      <div class="mc-name">${m.name||'-'}</div>
+      <div class="mc-pos">${m.pos||'-'}</div>
+      <div class="mc-stars">${starHtml}</div>
+      ${m.rankTitle?`<div class="rank-badge" style="font-size:10px;margin:0 auto 6px;">${m.rankTitle}</div>`:''}
+      ${m.memberBio?`<div class="mc-desc">${m.memberBio}</div>`:''}
+    `;
+    if(m.memberBio) card.onclick=()=>card.classList.toggle('expanded');
+    g.appendChild(card);
+  }
+}
+
+// ─── IDENTITY ───
+function uploadPhoto(evt) {
+  const f=evt.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{db.ref(`party_master_data/${userKey}/photo`).set(e.target.result).then(()=>toast('✅ الصورة محدثة.'));};
+  r.readAsDataURL(f);
+}
+function downloadId() {
+  toast('جاري تصدير الهوية...');
+  html2canvas(document.getElementById('frontCard'),{scale:3,useCORS:true}).then(c=>{
+    let a=document.createElement('a');a.href=c.toDataURL();a.download='هوية_الفوارس_وجه.png';a.click();
+  });
+  setTimeout(()=>{
+    html2canvas(document.getElementById('backCard'),{scale:3,useCORS:true}).then(c=>{
+      let a=document.createElement('a');a.href=c.toDataURL();a.download='هوية_الفوارس_ظهر.png';a.click();
+    });
+  },800);
+}
+
+// ─── TRANSFER ───
+function executeTransfer() {
+  const targetKey=document.getElementById('transferTarget').value;
+  const amt=parseInt(document.getElementById('transferAmount').value);
+  const note=document.getElementById('transferNote').value.trim();
+  if(!targetKey||isNaN(amt)||amt<=0){toast('بيانات التحويل غير مكتملة.');return;}
+  if((user.balance||0)<amt){toast('❌ الرصيد غير كافٍ.');return;}
+  db.ref(`party_master_data/${userKey}/balance`).set((user.balance||0)-amt).then(()=>{
+    const target=DB[targetKey];
+    db.ref(`party_master_data/${targetKey}/balance`).set((target.balance||0)+amt).then(()=>{
+      db.ref('news_feed').push().set({
+        title:`💸 تحويل مالي بين الأعضاء`,
+        content:`من: ${user.name} → إلى: ${target.name} | المبلغ: ${amt} أكة${note?` | ملاحظة: ${note}`:''}`,
+        date:new Date().toLocaleDateString('ar-EG')
+      });
+      toast(`✅ تم تحويل ${amt} أكة إلى ${target.name}`);
+      document.getElementById('transferModal').style.display='none';
+      document.getElementById('transferAmount').value='';
+      document.getElementById('transferNote').value='';
+    });
+  });
+}
+
+// ─── MARKET ───
+function encodeMarketFile(evt) {
+  const f=evt.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>document.getElementById('mImg').value=e.target.result;r.readAsDataURL(f);
+}
+function listItem() {
+  const title=document.getElementById('mTitle').value.trim();
+  const price=parseInt(document.getElementById('mPrice').value);
+  const img=document.getElementById('mImg').value;
+  if(!title||isNaN(price)){toast('أكمل البيانات.');return;}
+  db.ref('party_market_open_offers').push().set({
+    title,price,image:img,sellerName:user.name,sellerFirebaseKey:userKey
+  }).then(()=>{
+    document.getElementById('mTitle').value='';
+    document.getElementById('mPrice').value='';
+    document.getElementById('mFile').value='';
+    document.getElementById('mImg').value='';
+    toast('✅ تم طرح الشيء في السوق!');
+  });
+}
+function renderMarket() {
+  const c=document.getElementById('marketItems');if(!c)return;
+  c.innerHTML='';
+  const defaults=[
+    {title:'🥇 وسام الفارس الذهبي الدرجة الأولى',cost:500,isDefault:true},
+    {title:'💼 ترقية مستشار حركي مساعد',cost:1500,isDefault:true}
+  ];
+  defaults.forEach(d=>{
+    let card=document.createElement('div');card.className='market-card';
+    card.innerHTML=`<div style="width:55px;height:55px;border:1px solid var(--gold);border-radius:8px;background:rgba(197,160,89,0.1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${d.title.charAt(0)}</div>
+    <div class="market-info"><div class="market-title">${d.title}</div><div class="market-price">${d.cost} أكة</div><div class="market-seller">الخزينة العامة</div></div>
+    <button class="btn btn-bank btn-sm" onclick="buyDefault('${d.title}',${d.cost})">شراء</button>`;
+    c.appendChild(card);
+  });
+  for(let key in market){
+    const it=market[key];
+    let imgHtml=it.image?`<img src="${it.image}" class="market-img">`:`<div style="width:55px;height:55px;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;"></div>`;
+    let card=document.createElement('div');card.className='market-card';
+    card.innerHTML=`${imgHtml}<div class="market-info"><div class="market-title">${it.title}</div><div class="market-price">${it.price} أكة</div><div class="market-seller">العارض: ${it.sellerName}</div></div>
+    <button class="btn btn-bank btn-sm" onclick="buyMarket('${key}','${it.title}',${it.price},'${it.sellerFirebaseKey}','${it.sellerName}')">ابتياع</button>`;
+    c.appendChild(card);
+  }
+  // Loan box
+  let lb=document.createElement('div');
+  lb.style='margin-top:20px;background:rgba(0,0,0,0.4);padding:14px;border-radius:12px;border:1px dashed var(--bank);';
+  if(user&&user.activeLoanAmount&&user.activeLoanAmount>0){
+    let mins=Math.max(0,Math.round((user.loanDueDate-Date.now())/60000));
+    lb.innerHTML=`<h4 style="color:var(--bank);margin-bottom:8px;">🏦 قرضك النشط</h4>
+    <div style="font-size:13px;line-height:1.7;">المبلغ المقترض: <b style="color:var(--red);">${user.activeLoanAmount} أكة</b><br>
+    الواجب سداده: <b style="color:var(--bank);">${user.loanRepaymentTotal} أكة</b><br>
+    الوقت المتبقي: <b style="color:var(--red);">${mins} دقيقة</b></div>
+    <button class="btn btn-green" style="margin-top:10px;" onclick="repayLoan()">سداد القرض كلياً 💸</button>`;
+  } else {
+    lb.innerHTML=`<h4 style="color:var(--bank);margin-bottom:8px;">🏦 طلب تمويل واقتراض</h4>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:10px;">الفائدة: ${loanPolicy.interest||0}% | السقف: ${loanPolicy.maxAmount||0} أكة | المدة: ${loanPolicy.duration||0} دق.</p>
+    <div style="display:flex;gap:8px;"><input type="number" id="loanAmt" class="fc mb0" placeholder="المبلغ المطلوب">
+    <button class="btn btn-bank" style="width:130px;" onclick="applyLoan()">سحب القرض</button></div>`;
+  }
+  c.appendChild(lb);
+}
+function buyDefault(title,price){
+  if((user.balance||0)<price){toast(`❌ رصيدك غير كافٍ.`);return;}
+  db.ref(`party_master_data/${userKey}/balance`).set((user.balance||0)-price).then(()=>{
+    db.ref('party_central_bank/total_budget').transaction(c=>(c||0)+price);
+    toast(`✅ تم الحصول على ${title}!`);
+  });
+}
+function buyMarket(key,title,price,sellerKey,sellerName){
+  if((user.balance||0)<price){toast('❌ رصيدك غير كافٍ.');return;}
+  db.ref(`party_master_data/${userKey}/balance`).set((user.balance||0)-price).then(()=>{
+    if(sellerKey&&DB[sellerKey]) db.ref(`party_master_data/${sellerKey}/balance`).transaction(c=>(c||0)+price);
+    db.ref(`party_market_open_offers/${key}`).remove();
+    toast(`✅ تم شراء ${title} من ${sellerName}`);
+  });
+}
+function applyLoan(){
+  const amt=parseInt(document.getElementById('loanAmt').value);
+  if(isNaN(amt)||amt<=0||amt>loanPolicy.maxAmount){toast(`❌ الحد الأقصى ${loanPolicy.maxAmount} أكة.`);return;}
+  const interest=Math.round((amt*(loanPolicy.interest||0))/100);
+  const total=amt+interest;
+  db.ref(`party_master_data/${userKey}`).update({
+    balance:(user.balance||0)+amt,activeLoanAmount:amt,
+    loanRepaymentTotal:total,loanDueDate:Date.now()+((parseInt(loanPolicy.duration)||10)*60000)
+  }).then(()=>{
+    db.ref('party_central_bank/total_budget').transaction(c=>(c||0)-amt);
+    toast(`🏦 تم سحب ${amt} أكة. الواجب سداده: ${total} أكة`);
+  });
+}
+function repayLoan(){
+  const total=user.loanRepaymentTotal||0,bal=user.balance||0;
+  if(bal<total){toast(`❌ رصيدك (${bal} أكة) غير كافٍ لسداد ${total} أكة.`);return;}
+  db.ref(`party_master_data/${userKey}`).update({balance:bal-total,activeLoanAmount:0,loanRepaymentTotal:0,loanDueDate:0}).then(()=>{
+    db.ref('party_central_bank/total_budget').transaction(c=>(c||0)+total);
+    toast('✅ تم سداد القرض كلياً!');
+  });
+}
+
+// ─── DEPARTMENTS ───
+function createDept(){
+  const name=document.getElementById('deptName').value.trim();
+  const job=document.getElementById('deptJob').value.trim();
+  if(!name||!job){toast('أكمل البيانات.');return;}
+  db.ref('party_departments_data').push().set({name,job,perms:'تنفيذية',members:''}).then(()=>{
+    document.getElementById('deptName').value='';document.getElementById('deptJob').value='';
+    toast(`✅ تم تأسيس دائرة ${name}`);
+  });
+}
+function addToDept(){
+  const dk=document.getElementById('deptSelector').value;
+  const mk=document.getElementById('deptMemberSelector').value;
+  const perm=document.getElementById('memberPermission').value;
+  if(!dk||!mk)return;
+  const m={name:DB[mk].name,pos:DB[mk].pos,keyRef:mk,specialPerm:perm,status:perm==='none'?'approved':'pending_endorsement'};
+  db.ref(`party_departments_data/${dk}/members`).push().set(m).then(()=>toast('✅ تم إصدار أمر التنسيب.'));
+}
+function renderDepts(){
+  const c=document.getElementById('deptFeed');c.innerHTML='';
+  const isAdmin=user&&String(user.id).trim()===KEY_ADMIN;
+  for(let k in departments){
+    const d=departments[k];
+    let mHtml='<ul style="padding-right:20px;font-size:12px;margin-top:6px;">';
+    if(d.members){
+      for(let mk in d.members){
+        let m=d.members[mk];
+        let st=m.status==='pending_endorsement'?`<span style="color:var(--gold);">[معلق]</span>`:`<span style="color:var(--green);">[مفعل]</span>`;
+        let del=isAdmin?`<span style="color:var(--red);cursor:pointer;" onclick="db.ref('party_departments_data/${k}/members/${mk}').remove()">[إخراج]</span>`:'';
+        mHtml+=`<li>👤 ${m.name} - ${m.pos} ${st} ${del}</li>`;
+      }
+    }
+    mHtml+='</ul>';
+    let del=isAdmin?`<button class="del-btn" onclick="if(confirm('حذف الدائرة؟'))db.ref('party_departments_data/${k}').remove()">حذف</button>`:'';
+    const el=document.createElement('div');el.className='dept-item';
+    el.innerHTML=`${del}<strong>💼 ${d.name}</strong><br><span style="font-size:12px;color:var(--text2);">${d.job}</span>${mHtml}`;
+    c.appendChild(el);
+  }
+}
+function renderEndorse(){
+  const c=document.getElementById('endorseFeed');if(!c)return;
+  c.innerHTML='';
+  const isJudge=user&&String(user.id).trim()===KEY_JUDGE;
+  const isIntel=user&&String(user.id).trim()===KEY_INTEL;
+  let has=false;
+  for(let dk in departments){
+    let d=departments[dk];
+    if(d.members) for(let mk in d.members){
+      let m=d.members[mk];
+      if(m.status==='pending_endorsement'){
+        let show2=false,label='';
+        if(m.specialPerm==='court_appointment'&&isJudge){show2=true;label='تعيين بالقضاء';}
+        if(m.specialPerm==='intel_appointment'&&isIntel){show2=true;label='تعيين بالاستخبارات';}
+        if(show2){
+          has=true;
+          const el=document.createElement('div');
+          el.style='background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;margin-bottom:8px;border-right:3px solid var(--blue);';
+          el.innerHTML=`<div><b>${m.name}</b> | ${m.pos}</div><div style="font-size:12px;color:var(--gold);">${label}</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-green btn-sm" onclick="endorseAppointment('${dk}','${mk}',true)">✍️ مصادقة</button>
+            <button class="btn btn-red btn-sm" onclick="endorseAppointment('${dk}','${mk}',false)">❌ رفض</button>
+          </div>`;
+          c.appendChild(el);
+        }
+      }
+    }
+  }
+  if(!has) c.innerHTML='<div style="opacity:.5;font-size:12px;">لا توجد طلبات تعيين معلقة.</div>';
+}
+function endorseAppointment(dk,mk,ok){
+  if(ok) db.ref(`party_departments_data/${dk}/members/${mk}/status`).set('approved').then(()=>toast('✅ تمت المصادقة.'));
+  else db.ref(`party_departments_data/${dk}/members/${mk}`).remove().then(()=>toast('❌ تم الرفض.'));
+}
+
+// ─── CONSTITUTION ───
+function saveConstitution(){
+  const t=document.getElementById('constInput').value.trim();
+  db.ref('constitution_data').set(t).then(()=>toast('✅ تم تحديث الدستور.'));
+}
+function grantConstitution(grant){
+  if(!grant){db.ref('constitution_delegate').remove().then(()=>toast('✅ سحب التفويض.'));return;}
+  const k=document.getElementById('constDelegate').value;
+  if(!k)return;
+  db.ref('constitution_delegate').set(DB[k].id).then(()=>toast(`✅ تم تفويض ${DB[k].name}`));
+}
+
+// ─── COURT ───
+function submitCase(){
+  const ak=document.getElementById('courtAccused').value;
+  const det=document.getElementById('courtDetails').value.trim();
+  if(!ak||!det){toast('أكمل بيانات الشكوى.');return;}
+  db.ref('court_cases_data').push().set({
+    plaintiffName:user.name,accusedName:DB[ak].name,
+    accusedFirebaseRefKey:ak,details:det,
+    status:'تحت المداولة',ruling:''
+  }).then(()=>{document.getElementById('courtDetails').value='';toast('✅ تم قيد الدعوى.');});
+}
+function toggleJudgeFilter(){
+  judgeFilter=!judgeFilter;
+  document.getElementById('judgeFilterBtn').innerText=judgeFilter?'📂 عرض كل القضايا':'📂 الاستعراض القضائي المتكامل';
+  renderCourt();
+}
+function executeJudgeAction(key,type){
+  const c=courtCasesList[key]||courtCases[key];
+  let upd={};
+  if(type==='evidence'){
+    upd.status='موقوفة - بانتظار الدلائل';
+    upd.ruling='أمر رئيس القضاء: إلزام المشتكي بتقديم الدلائل الثبوتية فوراً.';
+    db.ref(`court_cases_data/${key}`).update(upd).then(()=>toast('✅ تم طلب الدليل.'));
+  } else if(type==='acquit'){
+    upd.status='مغلقة - براءة';
+    upd.ruling=`حكم مبرم: براءة ${c.accusedName} لعدم كفاية الأدلة.`;
+    db.ref(`court_cases_data/${key}`).update(upd).then(()=>{
+      db.ref('news_feed').push().set({title:`⚖️ حكم براءة`,content:`تبرئة [${c.accusedName}] في القضية المقامة ضده.`,date:'حكم نافذ'});
+      toast('✅ حكم البراءة صدر.');
+    });
+  } else if(type==='convict'){
+    const penalty=document.getElementById(`pen_${key}`).value.trim();
+    const fine=parseInt(document.getElementById(`fine_${key}`).value.trim());
+    if(!penalty){toast('اكتب العقوبة أولاً.');return;}
+    let fTxt=!isNaN(fine)&&fine>0?` مع غرامة ${fine} أكة`:'';
+    upd.status='مغلقة - إدانة';
+    upd.ruling=`حكم إدانة: ${penalty}${fTxt}`;
+    db.ref(`court_cases_data/${key}`).update(upd).then(()=>{
+      if(!isNaN(fine)&&fine>0&&c.accusedFirebaseRefKey)
+        db.ref(`party_master_data/${c.accusedFirebaseRefKey}/mandatoryFine`).transaction(curr=>(curr||0)+fine);
+      db.ref('news_feed').push().set({title:`⚖️ حكم إدانة`,content:`إدانة [${c.accusedName}]: ${penalty}${fTxt}`,date:'نافذ'});
+      toast('✅ حكم الإدانة صدر.');
+    });
+  }
+}
+function renderCourt(){
+  const c=document.getElementById('courtFeed');c.innerHTML='';
+  const isJudge=user&&String(user.id).trim()===KEY_JUDGE;
+  for(let key in courtCases){
+    const cas=courtCases[key];
+    if(judgeFilter&&cas.status.includes('مغلقة')) continue;
+    let stClass='st-pending';
+    if(cas.status.includes('براءة')) stClass='st-acquit';
+    else if(cas.status.includes('إدانة')) stClass='st-convict';
+    else if(cas.status.includes('دلائل')) stClass='st-evidence';
+    let jCtrl='';
+    if(isJudge){
+      jCtrl=`<div class="judge-actions">
+        <label class="lbl">العقوبة التفصيلية (في حال الإدانة)</label>
+        <input type="text" id="pen_${key}" class="fc" placeholder="اكتب العقوبة...">
+        <label class="lbl">الغرامة المالية (أكة) — اختياري</label>
+        <input type="number" id="fine_${key}" class="fc" placeholder="قيمة الغرامة">
+        <div class="btn-row">
+          <button class="court-action-btn" style="background:rgba(156,39,176,0.2);color:#ce93d8;border:1px solid rgba(156,39,176,0.4);" onclick="executeJudgeAction('${key}','evidence')">📋 طلب دليل</button>
+          <button class="court-action-btn" style="background:rgba(67,160,71,0.2);color:var(--green);border:1px solid rgba(67,160,71,0.4);" onclick="executeJudgeAction('${key}','acquit')">✅ براءة</button>
+          <button class="court-action-btn" style="background:rgba(229,57,53,0.2);color:var(--red);border:1px solid rgba(229,57,53,0.4);" onclick="executeJudgeAction('${key}','convict')">⚖️ إدانة</button>
+        </div>
+      </div>`;
+    }
+    let del=isJudge?`<button class="del-btn" onclick="if(confirm('شطب القضية؟'))db.ref('court_cases_data/${key}').remove()">شطب</button>`:'';
+    const el=document.createElement('div');el.className='court-item';
+    el.innerHTML=`${del}
+    <strong>🏛️ قضية #${key.substring(1,7)}</strong>
+    <div class="court-status ${stClass}">${cas.status}</div><br>
+    <div style="font-size:13px;margin-top:6px;"><b>المشتكي:</b> ${cas.plaintiffName}</div>
+    <div style="font-size:13px;color:var(--red);"><b>المدعى عليه:</b> ${cas.accusedName}</div>
+    <div style="background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;margin:8px 0;font-size:13px;">📋 ${cas.details}</div>
+    <div style="font-size:13px;"><b style="color:var(--gold);">منطوق الحكم:</b> <span style="color:#fff;">${cas.ruling||'قيد الدراسة'}</span></div>
+    ${jCtrl}`;
+    c.appendChild(el);
+  }
+}
+
+// ─── ELECTIONS ───
+function addCandidate(){
+  const name=document.getElementById('candName').value.trim();
+  const pos=document.getElementById('candPos').value.trim();
+  const bio=document.getElementById('candBio').value.trim();
+  const file=document.getElementById('candPhoto').files[0];
+  if(!name||!pos||!bio){toast('أكمل بيانات المرشح.');return;}
+  const save=(photo='')=>db.ref('election_candidates').push().set({name,pos,bio,votes:0,photoFile:photo}).then(()=>{
+    document.getElementById('candName').value='';document.getElementById('candPos').value='';
+    document.getElementById('candBio').value='';document.getElementById('candPhoto').value='';
+    toast('✅ تم إدراج المرشح.');
+  });
+  if(file){const r=new FileReader();r.onload=e=>save(e.target.result);r.readAsDataURL(file);}
+  else save();
+}
+function setElection(state){
+  db.ref('election_status/state').set(state).then(()=>toast(state==='open'?'🔓 التصويت مفتوح':'🔒 التصويت مغلق'));
+}
+function finishElection(){
+  let report='📊 تقرير الفرز النهائي:\n\n';
+  let top=null,max=-1;
+  for(let k in candidates){let c2=candidates[k],v=c2.votes||0;report+=`- ${c2.name} | ${c2.pos} | الأصوات: ${v}\n`;if(v>max){max=v;top=c2;}}
+  if(top) report+=`\n🏆 الفائز: ${top.name} (${top.pos})`;
+  db.ref('intel_dispatched_elections').set({reportText:report,at:new Date().toLocaleString()});
+  db.ref('election_status').set({state:'pending_approval',winnerName:top?top.name:'-'}).then(()=>toast('🏁 تم إرسال النتائج.'));
+}
+function approveElection(ok){
+  if(ok){
+    db.ref('news_feed').push().set({title:'🗳️ نتائج الانتخابات معتمدة',content:'تمت مصادقة نتائج الاقتراع رسمياً.',date:'معتمد'}).then(()=>{
+      db.ref('election_status').set({state:'closed'});
+      db.ref('election_candidates').remove();
+      toast('✅ النتائج معتمدة رسمياً.');
+    });
+  } else db.ref('election_status').set({state:'open'}).then(()=>toast('❌ تم نقض النتائج وإعادة فتح التصويت.'));
+}
+function renderElections(){
+  const vb=document.getElementById('voteBox');vb.innerHTML='';
+  const rb=document.getElementById('resultsBox');rb.innerHTML='';
+  if(electionStatus.state!=='open') vb.innerHTML='<div style="opacity:.6;font-size:13px;">صناديق الاقتراع مغلقة.</div>';
+  for(let k in candidates){
+    const cand=candidates[k];
+    const img=cand.photoFile?`<img src="${cand.photoFile}" style="width:45px;height:55px;border-radius:5px;object-fit:cover;border:1px solid var(--gold);">`:`<div style="width:45px;height:55px;background:#000;border:1px solid #333;border-radius:5px;"></div>`;
+    if(electionStatus.state==='open'){
+      let el=document.createElement('div');
+      el.style='background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;';
+      const isElecUser=user&&String(user.id).trim()===KEY_ELECTION;
+      let delBtn=isElecUser?`<span style="color:var(--red);cursor:pointer;font-size:11px;" onclick="db.ref('election_candidates/${k}').remove()">[استبعاد]</span>`:'';
+      el.innerHTML=`<div style="display:flex;gap:10px;align-items:center;">${img}<div><b>${cand.name}</b> ${delBtn}<br><span style="font-size:11px;color:var(--gold);">${cand.pos}</span><br><span style="font-size:11px;color:var(--text2);">${cand.bio||''}</span></div></div>
+      <button class="btn btn-blue btn-sm" onclick="vote('${k}')">تصويت ✓</button>`;
+      vb.appendChild(el);
+    }
+    let rd=document.createElement('div');
+    rd.style='background:rgba(255,255,255,0.02);padding:8px;border-radius:6px;margin-bottom:6px;font-size:12px;';
+    rd.innerHTML=`<b>${cand.name}</b> — ${cand.pos}<div style="color:var(--green);font-weight:700;">${cand.votes||0} صوت</div>`;
+    rb.appendChild(rd);
+  }
+}
+function renderJudgeElecPanel(){
+  const box=document.getElementById('judgeElecBox');if(!box)return;
+  const isJudge=user&&String(user.id).trim()===KEY_JUDGE;
+  box.style.display=(isJudge&&electionStatus.state==='pending_approval')?'block':'none';
+  if(isJudge){
+    const rep=document.getElementById('judgeElecReport');rep.innerHTML='';
+    for(let k in candidates) rep.innerHTML+=`- ${candidates[k].name} | ${candidates[k].pos} | أصوات: <b style="color:var(--gold);">${candidates[k].votes||0}</b><br>`;
+    if(electionStatus.winnerName) rep.innerHTML+=`<br><b style="color:var(--gold);">🏆 المرفوع للمصادقة: ${electionStatus.winnerName}</b>`;
+  }
+}
+function vote(k){
+  db.ref(`election_candidates/${k}/votes`).transaction(c=>(c||0)+1).then(()=>toast('✅ تم تسجيل صوتك.'));
+}
+
+// ─── OFFICIAL DOCS ───
+function generateDoc(){
+  const to=document.getElementById('docTo').value.trim();
+  const subj=document.getElementById('docSubject').value.trim();
+  const body=document.getElementById('docBody').value.trim();
+  const cc=document.getElementById('docCC').value.trim();
+  if(!body){toast('اكتب نص الكتاب.');return;}
+  const serial='F-'+Math.floor(100000+Math.random()*900000);
+  const date=new Date().toLocaleDateString('ar-EG');
+  set('docSerial',serial);set('docDate',date);
+  set('docToDisplay',to||'-');set('docSubDisplay',subj||'-');
+  set('docSubjectTitle',subj||'الموضوع');
+  set('docBodyDisplay',body);
+  set('docCCDisplay',cc?`نسخة إلى: ${cc}`:'نسخة منه إلى: الدوائر المعنية');
+  set('docSigner',user.name+' — '+user.pos);
+  document.getElementById('docPreview').style.display='block';
+  db.ref('news_feed').push().set({title:`📜 كتاب رسمي (${serial})`,content:`من: ${user.name}\nإلى: ${to||'-'}\nالموضوع: ${subj||'-'}\n\n${body}`,date}).then(()=>toast('✅ تم إصدار الكتاب الرسمي ونشره.'));
+}
+function downloadDoc(){
+  toast('جاري تصدير الكتاب...');
+  html2canvas(document.getElementById('docPrintArea'),{scale:2}).then(c=>{
+    let a=document.createElement('a');a.href=c.toDataURL();a.download='كتاب_رسمي.png';a.click();
+  });
+}
+
+// ─── BANK ───
+function loadBankDash(){
+  populateBankMember();
+  document.getElementById('maxLoan').value=loanPolicy.maxAmount||'';
+  document.getElementById('loanInt').value=loanPolicy.interest||'';
+  document.getElementById('loanDur').value=loanPolicy.duration||'';
+}
+function populateBankMember(){
+  const el=document.getElementById('bankMember');if(!el)return;
+  const saved=el.value;el.innerHTML='';
+  for(let k in DB){let o=document.createElement('option');o.value=k;o.innerText=`${DB[k].name} (${DB[k].pos})`;el.appendChild(o);}
+  if(saved&&DB[saved])el.value=saved;
+}
+function updateBudget(){
+  const v=parseInt(document.getElementById('newBudget').value);
+  if(isNaN(v)||v<0){toast('قيمة غير صحيحة.');return;}
+  db.ref('party_central_bank/total_budget').set(v).then(()=>{toast('✅ تم تحديث الميزانية.');document.getElementById('newBudget').value='';});
+}
+function saveLoanPolicy(){
+  const ma=parseInt(document.getElementById('maxLoan').value);
+  const in2=parseInt(document.getElementById('loanInt').value);
+  const du=parseInt(document.getElementById('loanDur').value);
+  if(isNaN(ma)||isNaN(in2)||isNaN(du)){toast('أكمل قيم السياسة.');return;}
+  db.ref('party_central_bank/loan_policy').set({maxAmount:ma,interest:in2,duration:du}).then(()=>toast('✅ تم اعتماد سياسة الاقتراض.'));
+}
+function setSalary(){
+  const k=document.getElementById('bankMember').value;
+  const v=parseInt(document.getElementById('salaryAmt').value);
+  if(!k||isNaN(v)||v<0){toast('أكمل البيانات.');return;}
+  db.ref(`party_master_data/${k}/salary`).set(v).then(()=>{
+    db.ref(`party_master_data/${k}/balance`).transaction(c=>(c||0)+v);
+    toast(`✅ راتب ${v} أكة لـ ${DB[k].name}`);document.getElementById('salaryAmt').value='';
+  });
+}
+function giveBonus(){
+  const k=document.getElementById('bankMember').value;
+  const v=parseInt(document.getElementById('bonusAmt').value);
+  if(!k||isNaN(v)||v<=0){toast('أكمل البيانات.');return;}
+  db.ref(`party_master_data/${k}/balance`).transaction(c=>(c||0)+v).then(()=>{
+    db.ref('news_feed').push().set({title:'🏅 مكافأة خاصة',content:`منح ${DB[k].name} مكافأة ${v} أكة.`,date:new Date().toLocaleDateString('ar-EG')});
+    toast(`✅ تم منح مكافأة ${v} أكة`);document.getElementById('bonusAmt').value='';
+  });
+}
+function applyFine(){
+  const k=document.getElementById('bankMember').value;
+  const v=parseInt(document.getElementById('fineAmt').value);
+  if(!k||isNaN(v)||v<=0){toast('أكمل البيانات.');return;}
+  db.ref(`party_master_data/${k}/mandatoryFine`).transaction(c=>(c||0)+v).then(()=>{
+    toast(`⚠️ غرامة ${v} أكة على ${DB[k].name}`);document.getElementById('fineAmt').value='';
+  });
+}
+function renderBankTable(){
+  const tb=document.getElementById('bankTable');if(!tb)return;tb.innerHTML='';
+  for(let k in DB){
+    const m=DB[k];
+    let tr=document.createElement('tr');
+    tr.innerHTML=`<td>${m.name}</td><td>${m.pos}</td>
+    <td style="color:var(--green);font-weight:700;">${m.salary||0} أكة</td>
+    <td style="color:var(--bank);font-weight:700;">${m.balance||0} أكة</td>
+    <td style="color:var(--red);">${m.loanRepaymentTotal?m.loanRepaymentTotal+' أكة':'—'}</td>`;
+    tb.appendChild(tr);
+  }
+}
+
+// ─── INTEL ───
+function loadIntelDash(){
+  const el=document.getElementById('intelMember');if(!el)return;
+  const saved=el.value;el.innerHTML='';
+  for(let k in DB){let o=document.createElement('option');o.value=k;o.innerText=`${DB[k].name} (${DB[k].pos})`;el.appendChild(o);}
+  if(saved&&DB[saved])el.value=saved;
+  loadMemberData();
+}
+function loadMemberData(){
+  const k=document.getElementById('intelMember').value;if(!k||!DB[k])return;
+  const m=DB[k];
+  document.getElementById('int_name').value=m.name||'';
+  document.getElementById('int_pos').value=m.pos||'';
+  document.getElementById('int_id').value=m.id||'';
+  document.getElementById('int_birth').value=m.birth||'';
+  document.getElementById('int_home').value=m.home||'';
+  document.getElementById('int_dept').value=m.dept||'';
+  document.getElementById('int_rank').value=m.rank||'';
+  document.getElementById('int_custom').value=m.customFieldValue||'';
+  document.getElementById('intelRating').value=m.intelRating||'';
+  document.getElementById('intelArchive').value=m.intelArchiveReports||'';
+}
+function encodeIntelPhoto(evt){
+  const f=evt.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{document.getElementById('intelPhotoData').value=e.target.result;toast('✅ الصورة محملة.');};
+  r.readAsDataURL(f);
+}
+function updateMember(isNew){
+  const k=document.getElementById('intelMember').value;
+  const ref=isNew?db.ref('party_master_data').push():db.ref(`party_master_data/${k}`);
+  const photo=document.getElementById('intelPhotoData').value||undefined;
+  const obj={
+    name:document.getElementById('int_name').value.trim(),
+    pos:document.getElementById('int_pos').value.trim(),
+    id:document.getElementById('int_id').value.trim(),
+    birth:document.getElementById('int_birth').value.trim(),
+    home:document.getElementById('int_home').value.trim(),
+    dept:document.getElementById('int_dept').value.trim(),
+    rank:document.getElementById('int_rank').value.trim(),
+    customFieldValue:document.getElementById('int_custom').value.trim()
+  };
+  if(photo) obj.photo=photo;
+  ref.update(obj).then(()=>toast(isNew?'✅ عضو جديد مضاف.':'✅ تم التعديل.'));
+}
+function deleteMember(){
+  const k=document.getElementById('intelMember').value;if(!k)return;
+  if(confirm('حذف نهائي لهذا العضو؟')) db.ref(`party_master_data/${k}`).remove().then(()=>toast('✅ تم الحذف.'));
+}
+function togglePosting(can){
+  const k=document.getElementById('intelMember').value;if(!k)return;
+  db.ref(`party_master_data/${k}/canPost`).set(can).then(()=>toast(can?'✅ حظر النشر ملغي.':'🚫 النشر محظور.'));
+}
+function toggleArrest(arrest){
+  const k=document.getElementById('intelMember').value;if(!k)return;
+  db.ref(`party_master_data/${k}`).update({arrested:arrest,canPost:!arrest}).then(()=>toast(arrest?'🔒 تم الاعتقال.':'🔓 تم الإفراج.'));
+}
+function saveArchive(){
+  const k=document.getElementById('intelMember').value;if(!k)return;
+  db.ref(`party_master_data/${k}`).update({
+    intelArchiveReports:document.getElementById('intelArchive').value.trim(),
+    intelRating:document.getElementById('intelRating').value.trim()
+  }).then(()=>toast('✅ الأرشيف محفوظ.'));
+}
+function saveSystemConfig(){
+  const cfg={};
+  const country=document.getElementById('cfg_country').value.trim();
+  const party=document.getElementById('cfg_party').value.trim();
+  const navT=document.getElementById('cfg_navTitle').value.trim();
+  const motto=document.getElementById('cfg_motto').value.trim();
+  const field=document.getElementById('cfg_fieldName').value.trim();
+  const footer=document.getElementById('cfg_footerText').value.trim();
+  if(country)cfg.country=country;if(party)cfg.party=party;if(navT)cfg.navTitle=navT;
+  if(motto)cfg.motto=motto;if(field)cfg.customFieldField=field;if(footer)cfg.footerText=footer;
+  db.ref('system_layout_config').update(cfg).then(()=>toast('✅ الإعدادات محدثة.'));
+}
+function applySystemConfig(cfg){
+  if(!cfg)return;
+  if(cfg.country) set('idCountry',cfg.country);
+  if(cfg.party){set('idParty',cfg.party);set('docPartyName',cfg.party);}
+  if(cfg.navTitle) set('navTitle',cfg.navTitle);
+  if(cfg.motto) set('idMotto',cfg.motto);
+  if(cfg.footerText) set('idCardMottoFooter',cfg.footerText);
+  if(cfg.customFieldField){
+    let el=document.getElementById('lbl_custom');
+    if(el) el.innerText=cfg.customFieldField;
+    else if(user){
+      let con=document.getElementById('idFields');
+      let d=document.createElement('div');d.className='id-field';
+      d.innerHTML=`<div class="id-lbl" id="lbl_custom">${cfg.customFieldField}</div><div class="id-val" id="f_custom_val">${user.customFieldValue||'-'}</div>`;
+      con.appendChild(d);
+    }
+  }
+}
+
+// ─── MEDIA ───
+function savePartyDesc(){
+  const t=document.getElementById('partyDesc').value.trim();
+  db.ref('party_description').set(t).then(()=>toast('✅ تم حفظ وصف الحزب.'));
+}
+function loadMediaMember(){
+  const k=document.getElementById('mediaEditMember').value;if(!k||!DB[k])return;
+  const m=DB[k];
+  document.getElementById('mediaTitle').value=m.rankTitle||'';
+  document.getElementById('mediaBio').value=m.memberBio||'';
+  document.getElementById('mediaStars').value=m.rank||1;
+}
+function saveMediaMember(){
+  const k=document.getElementById('mediaEditMember').value;if(!k)return;
+  const title=document.getElementById('mediaTitle').value.trim();
+  const bio=document.getElementById('mediaBio').value.trim();
+  const stars=parseInt(document.getElementById('mediaStars').value)||1;
+  db.ref(`party_master_data/${k}`).update({rankTitle:title,memberBio:bio,rank:stars}).then(()=>toast('✅ تم تحديث بروفايل العضو.'));
+}
+
+// ─── ADMIN ───
+function issueDecree(){
+  const t=document.getElementById('decreeContent').value.trim();if(!t)return;
+  db.ref('news_feed').push().set({title:'📢 مرسوم سيادي',content:t,date:'نافذ فوراً'}).then(()=>{
+    document.getElementById('decreeContent').value='';toast('✅ تم بث المرسوم.');
+  });
+}
+
+// ─── SELECTS ───
+function populateSelects(){
+  const ids=['courtAccused','intelMember','constDelegate','deptMemberSelector','bankMember','transferTarget','mediaEditMember'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    const saved=el.value;el.innerHTML='';
+    for(let k in DB){
+      if(id==='transferTarget'&&user&&k===userKey) continue; // can't transfer to self
+      let o=document.createElement('option');o.value=k;
+      o.innerText=`${DB[k].name} (${DB[k].pos})`;el.appendChild(o);
+    }
+    if(saved&&DB[saved])el.value=saved;
+  });
+  // dept selectors
+  const ds=document.getElementById('deptSelector');if(ds){
+    const sv=ds.value;ds.innerHTML='';
+    for(let k in departments){let o=document.createElement('option');o.value=k;o.innerText=departments[k].name;ds.appendChild(o);}
+    if(sv)ds.value=sv;
+  }
+}
+</script>
+</body>
+</htmel>
